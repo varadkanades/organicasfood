@@ -1,0 +1,120 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Organika's Food — Global Styles
+   ============================================================ */
+
+@theme {
+  /* Earthy Green Palette */
+  --color-deep-forest: #2D5016;
+  --color-sage-green: #7A9B6D;
+  --color-fresh-green: #4A7C2E;
+  --color-warm-cream: #FAF6F0;
+  --color-earthy-brown: #8B6914;
+  --color-soft-stone: #E8E4DE;
+  --color-rich-black: #1A1A1A;
+  --color-mid-gray: #666666;
+
+  /* Font families */
+  --font-heading: "DM Serif Display", Georgia, serif;
+  --font-body: "DM Sans", system-ui, sans-serif;
+
+  /* Custom easing */
+  --ease-organic: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Animations */
+  --animate-fade-in: fadeIn 0.6s ease-out forwards;
+  --animate-slide-up: slideUp 0.6s ease-out forwards;
+  --animate-slide-down: slideDown 0.3s ease-out forwards;
+  --animate-slide-in-right: slideInRight 0.35s ease-out forwards;
+  --animate-scale-in: scaleIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes slideUp {
+  0% { opacity: 0; transform: translateY(24px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  0% { opacity: 0; transform: translateY(-12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  0% { opacity: 0; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Base styles */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--color-warm-cream);
+    color: var(--color-rich-black);
+    font-family: var(--font-body);
+  }
+
+  /* Custom text selection */
+  ::selection {
+    background-color: color-mix(in srgb, var(--color-sage-green) 30%, transparent);
+    color: var(--color-deep-forest);
+  }
+
+  /* Smooth focus outlines */
+  :focus-visible {
+    outline: 2px solid var(--color-fresh-green);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+/* Custom utility classes */
+@layer utilities {
+  .h-18 {
+    height: 4.5rem;
+  }
+
+  .h-13 {
+    height: 3.25rem;
+  }
+
+  /* Hide scrollbar */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+/* Hide scrollbar on mobile trust bar */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Organic blob morph animation */
+@keyframes morph {
+  0%, 100% { border-radius: 40% 60% 55% 45% / 45% 55% 60% 40%; }
+  25% { border-radius: 55% 45% 40% 60% / 60% 40% 55% 45%; }
+  50% { border-radius: 45% 55% 60% 40% / 40% 60% 45% 55%; }
+  75% { border-radius: 60% 40% 45% 55% / 55% 45% 40% 60%; }
+}
