@@ -2,9 +2,11 @@
 
 import { useState, FormEvent } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, User, Phone, ArrowLeft, Loader2 } from "lucide-react";
 import Button from "@/components/ui/Button";
+import { supabase } from "@/lib/supabase";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 type AuthMode = "login" | "signup";
@@ -69,6 +71,7 @@ function LeafDecoration({ className }: { className?: string }) {
 
 // ── Main Login Component ─────────────────────────────────────────────────────
 export default function LoginPage() {
+  const router = useRouter();
   const [mode, setMode] = useState<AuthMode>("login");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -129,57 +132,45 @@ export default function LoginPage() {
 
     try {
       if (mode === "login") {
-        // ──────────────────────────────────────────────────────────────────
-        // TODO: Replace with Supabase Auth
-        // const { data, error } = await supabase.auth.signInWithPassword({
-        //   email,
-        //   password,
-        // });
-        // if (error) throw error;
-        //
-        // // Check user role from profiles table
-        // const { data: profile } = await supabase
-        //   .from("profiles")
-        //   .select("role")
-        //   .eq("id", data.user.id)
-        //   .single();
-        //
-        // if (profile?.role === "admin") {
-        //   router.push("/admin");
-        // } else {
-        //   router.push("/");
-        // }
-        // ──────────────────────────────────────────────────────────────────
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) throw error;
 
-        // Simulated delay for demo
-        await new Promise((r) => setTimeout(r, 1500));
-        console.log("Login:", { email, password });
+        // Check user role from profiles table
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", data.user.id)
+          .single();
+
+        if (profile?.role === "admin") {
+          router.push("/admin");
+        } else {
+          router.push("/");
+        }
       } else {
-        // ──────────────────────────────────────────────────────────────────
-        // TODO: Replace with Supabase Auth
-        // const { data, error } = await supabase.auth.signUp({
-        //   email,
-        //   password,
-        //   options: {
-        //     data: {
-        //       full_name: name,
-        //       phone: phone,
-        //       role: "customer",
-        //     },
-        //   },
-        // });
-        // if (error) throw error;
-        //
-        // await supabase.from("profiles").insert({
-        //   id: data.user.id,
-        //   full_name: name,
-        //   phone: phone,
-        //   role: "customer",
-        // });
-        // ──────────────────────────────────────────────────────────────────
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              full_name: name,
+              phone: phone,
+            },
+          },
+        });
+        if (error) throw error;
 
-        await new Promise((r) => setTimeout(r, 1500));
-        console.log("Sign Up:", { name, email, phone, password });
+        // Check if email confirmation is required
+        if (data.user && !data.session) {
+          setErrors({
+            general: "Check your email for a confirmation link to complete signup.",
+          });
+        } else {
+          router.push("/");
+        }
       }
     } catch (err: unknown) {
       const message =
@@ -194,24 +185,17 @@ export default function LoginPage() {
   async function handleGoogleSignIn() {
     setIsGoogleLoading(true);
     try {
-      // ────────────────────────────────────────────────────────────────────
-      // TODO: Replace with Supabase Auth
-      // const { error } = await supabase.auth.signInWithOAuth({
-      //   provider: "google",
-      //   options: {
-      //     redirectTo: `${window.location.origin}/auth/callback`,
-      //   },
-      // });
-      // if (error) throw error;
-      // ────────────────────────────────────────────────────────────────────
-
-      await new Promise((r) => setTimeout(r, 1500));
-      console.log("Google sign-in triggered");
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (error) throw error;
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Google sign-in failed. Please try again.";
       setErrors({ general: message });
-    } finally {
       setIsGoogleLoading(false);
     }
   }

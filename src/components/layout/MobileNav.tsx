@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { LogOut, User } from "lucide-react";
 import { NAV_LINKS, SITE_NAME, WHATSAPP_NUMBER } from "@/lib/constants";
 import { getWhatsAppUrl, cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
 
 interface MobileNavProps {
   isOpen: boolean;
@@ -13,11 +15,17 @@ interface MobileNavProps {
 
 export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
   const pathname = usePathname();
+  const { user, role, isLoading, signOut } = useAuth();
 
   const whatsappUrl = getWhatsAppUrl(
     WHATSAPP_NUMBER,
     "Hi! I have a question about Organika's Food products."
   );
+
+  const handleSignOut = async () => {
+    onClose();
+    await signOut();
+  };
 
   return (
     <AnimatePresence>
@@ -75,6 +83,31 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
                     </motion.div>
                   );
                 })}
+
+                {/* Admin link — only visible to admins */}
+                {user && role === "admin" && (
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 + NAV_LINKS.length * 0.05 }}
+                  >
+                    <Link
+                      href="/admin"
+                      onClick={onClose}
+                      className={cn(
+                        "flex items-center rounded-xl px-4 py-3.5 text-lg font-medium transition-all duration-200",
+                        pathname.startsWith("/admin")
+                          ? "bg-fresh-green/10 text-deep-forest"
+                          : "text-mid-gray hover:bg-soft-stone/60 hover:text-rich-black"
+                      )}
+                    >
+                      Admin Dashboard
+                      {pathname.startsWith("/admin") && (
+                        <span className="ml-auto h-1.5 w-1.5 rounded-full bg-fresh-green" />
+                      )}
+                    </Link>
+                  </motion.div>
+                )}
               </div>
 
               {/* Divider */}
@@ -106,6 +139,30 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
                   </svg>
                   Chat on WhatsApp
                 </a>
+
+                {/* Auth action */}
+                {!isLoading && (
+                  <>
+                    {user ? (
+                      <button
+                        onClick={handleSignOut}
+                        className="flex h-12 items-center justify-center gap-2 rounded-xl border-2 border-red-200 text-red-600 font-medium text-sm transition-colors hover:bg-red-50 hover:border-red-300"
+                      >
+                        <LogOut className="h-4 w-4" />
+                        Sign Out
+                      </button>
+                    ) : (
+                      <Link
+                        href="/login"
+                        onClick={onClose}
+                        className="flex h-12 items-center justify-center gap-2 rounded-xl border-2 border-soft-stone text-mid-gray font-medium text-sm transition-colors hover:border-sage-green hover:text-rich-black"
+                      >
+                        <User className="h-4 w-4" />
+                        Sign In
+                      </Link>
+                    )}
+                  </>
+                )}
               </motion.div>
 
               {/* Bottom Brand */}

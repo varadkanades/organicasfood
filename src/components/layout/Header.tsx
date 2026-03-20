@@ -3,18 +3,20 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ShoppingBag, Search, Menu, X } from "lucide-react";
+import { ShoppingBag, Search, Menu, X, LogOut, User } from "lucide-react";
 import Container from "@/components/ui/Container";
 import MobileNav from "@/components/layout/MobileNav";
 import { NAV_LINKS, SITE_NAME } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Header() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const { toggleCart, totalItems } = useCart();
+  const { user, role, isLoading, signOut } = useAuth();
 
   // Is this the homepage? If yes, header starts transparent
   const isHomepage = pathname === "/";
@@ -152,7 +154,7 @@ export default function Header() {
               })}
             </div>
 
-            {/* Right Side — Search + Cart + Mobile Menu */}
+            {/* Right Side — Search + Cart + Auth + Mobile Menu */}
             <div className="flex items-center gap-1">
               {/* Search button */}
               <button
@@ -186,6 +188,41 @@ export default function Header() {
                   </span>
                 )}
               </button>
+
+              {/* Auth button — Login link or Logout icon */}
+              {!isLoading && (
+                <>
+                  {user ? (
+                    <button
+                      onClick={signOut}
+                      className={cn(
+                        "relative flex h-10 w-10 items-center justify-center rounded-lg transition-colors duration-200",
+                        isTransparent
+                          ? "text-white/70 hover:bg-white/10 hover:text-white"
+                          : "text-mid-gray hover:bg-soft-stone/50 hover:text-rich-black"
+                      )}
+                      aria-label="Sign out"
+                      title="Sign out"
+                    >
+                      <LogOut className="h-[18px] w-[18px]" strokeWidth={2} />
+                    </button>
+                  ) : (
+                    <Link
+                      href="/login"
+                      className={cn(
+                        "relative flex h-10 w-10 items-center justify-center rounded-lg transition-colors duration-200",
+                        isTransparent
+                          ? "text-white/70 hover:bg-white/10 hover:text-white"
+                          : "text-mid-gray hover:bg-soft-stone/50 hover:text-rich-black"
+                      )}
+                      aria-label="Sign in"
+                      title="Sign in"
+                    >
+                      <User className="h-[18px] w-[18px]" strokeWidth={2} />
+                    </Link>
+                  )}
+                </>
+              )}
 
               {/* Mobile menu toggle */}
               <button

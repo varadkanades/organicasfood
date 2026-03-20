@@ -4,6 +4,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import WhatsAppFloat from "@/components/shared/WhatsAppFloat";
 import { CartProvider } from "@/context/CartContext";
+import { AuthProvider } from "@/context/AuthContext";
 import CartSlidePanel from "@/components/cart/CartSlidePanel";
 
 export const metadata: Metadata = {
@@ -35,13 +36,15 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body bg-warm-cream text-rich-black antialiased">
-        <CartProvider>
-          <Header />
-          <main className="min-h-screen">{children}</main>
-          <Footer />
-          <WhatsAppFloat />
-          <CartSlidePanel />
-        </CartProvider>
+        <AuthProvider>
+          <CartProvider>
+            <Header />
+            <main className="min-h-screen">{children}</main>
+            <Footer />
+            <WhatsAppFloat />
+            <CartSlidePanel />
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -1,14 +1,10 @@
-// TODO: Phase 4 — Checkout with order summary + delivery form + Razorpay
-import Container from "@/components/ui/Container";
+import type { Metadata } from "next";
+import CheckoutPage from "./CheckoutPage";
 
-export const metadata = {
-  title: "Checkout — Organika's Food",
+export const metadata: Metadata = {
+  title: "Checkout",
 };
 
-export default function CheckoutPage() {
-  return (
-    <Container className="py-12">
-      <p className="text-center text-mid-gray">[Checkout — Phase 4]</p>
-    </Container>
-  );
+export default function Page() {
+  return <CheckoutPage />;
 }
