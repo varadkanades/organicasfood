@@ -15,6 +15,12 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
+      // Check if there's a next URL (e.g., password reset redirect)
+      const next = searchParams.get("next");
+      if (next) {
+        return NextResponse.redirect(`${origin}${next}`);
+      }
+
       // Get user to check role
       const { data: { user } } = await supabase.auth.getUser();
 

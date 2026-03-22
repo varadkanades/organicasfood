@@ -43,6 +43,8 @@ export interface SupabaseOrder {
   delivery: DeliveryDetails;
   subtotal: number;
   shipping: number;
+  discount: number;
+  coupon_code: string | null;
   total: number;
   payment_method: PaymentMethod;
   payment_status: PaymentStatus;
@@ -57,6 +59,8 @@ export interface CreateOrderInput {
   delivery: DeliveryDetails;
   subtotal: number;
   shipping: number;
+  discount?: number;
+  coupon_code?: string;
   total: number;
   payment_method: PaymentMethod;
   notes?: string;
@@ -88,6 +92,8 @@ export async function createOrder(
     delivery: input.delivery,
     subtotal: input.subtotal,
     shipping: input.shipping,
+    discount: input.discount || 0,
+    coupon_code: input.coupon_code || null,
     total: input.total,
     payment_method: input.payment_method,
     payment_status: input.payment_method === "cod" ? "pending" : "pending",

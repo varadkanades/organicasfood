@@ -15,6 +15,8 @@ import {
   ShieldCheck,
   Truck,
   Package,
+  Tag,
+  X,
 } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
@@ -22,6 +24,12 @@ import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { formatPrice } from "@/lib/utils";
 import { createOrder, type DeliveryDetails } from "@/lib/supabase-orders";
+import {
+  validateCoupon,
+  calculateDiscount,
+  recordCouponUsage,
+} from "@/lib/supabase-coupons";
+import type { AppliedCoupon } from "@/types/coupon";
 
 // ── Indian states for dropdown ────────────────────────────────────────────────
 
@@ -76,6 +84,12 @@ export default function CheckoutPage() {
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Coupon state
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
+
   // Form state
   const [form, setForm] = useState<DeliveryDetails>({
     fullName: "",
@@ -95,7 +109,8 @@ export default function CheckoutPage() {
 
   // Computed
   const shipping = getShippingCost(form.city);
-  const total = totalPrice + shipping;
+  const discount = appliedCoupon?.discountAmount ?? 0;
+  const total = totalPrice + shipping - discount;
   const isFreeShipping = shipping === 0 && form.city.trim().length > 0;
 
   // ── Validation ──────────────────────────────────────────────────────────────
@@ -140,6 +155,36 @@ export default function CheckoutPage() {
     }
   }
 
+  // ── Coupon handlers ────────────────────────────────────────────────────────
+
+  async function handleApplyCoupon() {
+    if (!couponCode.trim()) return;
+    setCouponError(null);
+    setIsValidatingCoupon(true);
+
+    try {
+      const result = await validateCoupon(couponCode, user?.id ?? null);
+      if (!result.valid || !result.coupon) {
+        setCouponError(result.error || "Invalid coupon");
+        return;
+      }
+
+      const discountAmount = calculateDiscount(result.coupon, totalPrice);
+      setAppliedCoupon({ coupon: result.coupon, discountAmount });
+      setCouponError(null);
+    } catch {
+      setCouponError("Failed to validate coupon. Please try again.");
+    } finally {
+      setIsValidatingCoupon(false);
+    }
+  }
+
+  function handleRemoveCoupon() {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    setCouponError(null);
+  }
+
   // ── Place Order ─────────────────────────────────────────────────────────────
 
   async function handlePlaceOrder() {
@@ -174,10 +219,17 @@ export default function CheckoutPage() {
         },
         subtotal: totalPrice,
         shipping,
+        discount,
+        coupon_code: appliedCoupon?.coupon.code,
         total,
         payment_method: "cod",
         notes: notes.trim() || undefined,
       });
+
+      // Record coupon usage if a coupon was applied
+      if (appliedCoupon && user?.id) {
+        await recordCouponUsage(appliedCoupon.coupon.id, user.id, order.id);
+      }
 
       clearCart();
       router.push(`/order-confirmation?order=${order.order_number}`);
@@ -478,6 +530,70 @@ export default function CheckoutPage() {
                 ))}
               </div>
 
+              {/* Coupon section */}
+              <div className="mb-4">
+                {user ? (
+                  appliedCoupon ? (
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-fresh-green/5 border border-fresh-green/20">
+                      <div className="flex items-center gap-2">
+                        <Tag className="h-4 w-4 text-fresh-green" />
+                        <span className="text-sm font-medium text-fresh-green">
+                          {appliedCoupon.coupon.code}
+                        </span>
+                        <span className="text-xs text-mid-gray">
+                          (−{formatPrice(appliedCoupon.discountAmount)})
+                        </span>
+                      </div>
+                      <button
+                        onClick={handleRemoveCoupon}
+                        className="p-1 rounded hover:bg-fresh-green/10 transition-colors"
+                      >
+                        <X className="h-4 w-4 text-mid-gray" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={couponCode}
+                          onChange={(e) => {
+                            setCouponCode(e.target.value.toUpperCase());
+                            if (couponError) setCouponError(null);
+                          }}
+                          placeholder="Coupon code"
+                          className="flex-1 h-10 px-3 rounded-lg border border-soft-stone bg-white text-sm font-mono text-rich-black placeholder:text-mid-gray/40 focus:outline-none focus:ring-2 focus:ring-fresh-green/40 focus:border-fresh-green transition-colors tracking-wider"
+                        />
+                        <button
+                          onClick={handleApplyCoupon}
+                          disabled={isValidatingCoupon || !couponCode.trim()}
+                          className="h-10 px-4 rounded-lg bg-deep-forest text-white text-sm font-medium hover:bg-rich-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                        >
+                          {isValidatingCoupon ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            "Apply"
+                          )}
+                        </button>
+                      </div>
+                      {couponError && (
+                        <p className="text-xs text-red-500 mt-1.5">{couponError}</p>
+                      )}
+                    </div>
+                  )
+                ) : (
+                  <p className="text-xs text-mid-gray text-center py-2">
+                    <Link
+                      href="/login"
+                      className="text-fresh-green hover:text-deep-forest font-medium"
+                    >
+                      Sign in
+                    </Link>{" "}
+                    to apply a coupon code
+                  </p>
+                )}
+              </div>
+
               <div className="h-px bg-soft-stone/40 mb-4" />
 
               {/* Subtotal */}
@@ -489,7 +605,7 @@ export default function CheckoutPage() {
               </div>
 
               {/* Shipping */}
-              <div className="flex items-center justify-between text-sm mb-4">
+              <div className="flex items-center justify-between text-sm mb-2">
                 <span className="text-mid-gray">Shipping</span>
                 <span
                   className={`font-medium ${
@@ -503,6 +619,18 @@ export default function CheckoutPage() {
                       : formatPrice(shipping)}
                 </span>
               </div>
+
+              {/* Discount */}
+              {discount > 0 && (
+                <div className="flex items-center justify-between text-sm mb-2">
+                  <span className="text-fresh-green">Discount</span>
+                  <span className="font-medium text-fresh-green">
+                    −{formatPrice(discount)}
+                  </span>
+                </div>
+              )}
+
+              <div className="mb-4" />
 
               {isFreeShipping && (
                 <p className="text-xs text-fresh-green bg-fresh-green/5 rounded-lg px-3 py-2 mb-4">
