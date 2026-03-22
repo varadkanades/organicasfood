@@ -15,6 +15,7 @@ import {
   AlertCircle,
   Check,
   Loader2,
+  Tag,
 } from "lucide-react";
 import Container from "@/components/ui/Container";
 import { cn } from "@/lib/utils";
@@ -28,6 +29,7 @@ import {
   type SupabaseProductSize,
   type ProductInput,
 } from "@/lib/supabase-products";
+import CouponManager from "@/components/admin/CouponManager";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -88,6 +90,7 @@ function generateSlug(name: string): string {
 
 export default function AdminDashboard() {
   const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<"products" | "coupons">("products");
   const [products, setProducts] = useState<SupabaseProduct[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
@@ -366,10 +369,10 @@ export default function AdminDashboard() {
               Admin Dashboard
             </h1>
             <p className="text-sm text-mid-gray mt-1">
-              Manage products, prices, and stock
+              Manage products, coupons, and more
             </p>
           </div>
-          {viewMode === "list" && (
+          {activeTab === "products" && viewMode === "list" && (
             <button
               onClick={openAddForm}
               className="flex items-center gap-2 h-11 px-5 rounded-lg bg-fresh-green text-white text-sm font-medium hover:bg-deep-forest transition-colors shadow-sm"
@@ -380,6 +383,32 @@ export default function AdminDashboard() {
           )}
         </div>
 
+        {/* Tab navigation */}
+        <div className="flex gap-1 mt-6 border-b border-soft-stone">
+          {([
+            { key: "products" as const, label: "Products", icon: Package },
+            { key: "coupons" as const, label: "Coupons", icon: Tag },
+          ]).map(({ key, label, icon: Icon }) => (
+            <button
+              key={key}
+              onClick={() => {
+                setActiveTab(key);
+                if (key === "products") cancelForm();
+              }}
+              className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-colors -mb-px ${
+                activeTab === key
+                  ? "border-fresh-green text-fresh-green"
+                  : "border-transparent text-mid-gray hover:text-rich-black"
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* ── PRODUCTS TAB ── */}
+        {activeTab === "products" && (<>
         {/* Messages */}
         {error && (
           <div className="mt-6 flex items-start gap-3 p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
@@ -1118,6 +1147,14 @@ export default function AdminDashboard() {
                 </button>
               </div>
             </div>
+          </div>
+        )}
+        </>)}
+
+        {/* ── COUPONS TAB ── */}
+        {activeTab === "coupons" && (
+          <div className="mt-8">
+            <CouponManager />
           </div>
         )}
       </Container>

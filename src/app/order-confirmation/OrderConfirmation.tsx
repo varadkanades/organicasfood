@@ -213,6 +213,16 @@ export default function OrderConfirmation() {
                   {order.shipping === 0 ? "FREE" : formatPrice(order.shipping)}
                 </span>
               </div>
+              {order.discount > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-fresh-green">
+                    Discount{order.coupon_code ? ` (${order.coupon_code})` : ""}
+                  </span>
+                  <span className="text-fresh-green font-medium">
+                    −{formatPrice(order.discount)}
+                  </span>
+                </div>
+              )}
               <div className="h-px bg-soft-stone/40 my-2" />
               <div className="flex justify-between">
                 <span className="font-semibold text-rich-black">Total</span>
