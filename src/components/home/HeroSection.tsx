@@ -320,7 +320,7 @@ export function HeroSection() {
           >
             <span className="w-1.5 h-1.5 rounded-full bg-fresh-green animate-pulse" />
             <span className="text-xs font-medium text-white/80 tracking-[0.15em] uppercase">
-              FSSAI Certified · 100% Natural
+              FSSAI Certified · Lic. 21525043002244 · 100% Natural
             </span>
           </motion.div>
 

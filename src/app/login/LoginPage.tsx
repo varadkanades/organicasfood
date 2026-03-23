@@ -2,6 +2,7 @@
 
 import { useState, FormEvent } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, User, Phone, ArrowLeft, Loader2 } from "lucide-react";
@@ -237,19 +238,17 @@ export default function LoginPage() {
         <LeafDecoration className="absolute top-1/3 right-12 w-32 h-32 text-white rotate-[60deg]" />
 
         {/* Content */}
-        <div className="relative z-10 flex flex-col justify-between p-12 xl:p-16 w-full">
+        <div className="relative z-10 flex flex-col justify-between p-12 pt-20 xl:p-16 xl:pt-24 w-full">
           {/* Top — Logo */}
           <div>
             <Link href="/" className="inline-flex items-center gap-3 group">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 group-hover:bg-white/15 transition-colors">
-                <svg
-                  className="h-5 w-5 text-sage-green"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75C7 8 17 8 17 8z" />
-                </svg>
-              </span>
+              <Image
+                src="/images/logo.png"
+                alt="Organika's Food Logo"
+                width={48}
+                height={48}
+                className="rounded-full bg-white/10 group-hover:bg-white/15 transition-colors"
+              />
               <div>
                 <span className="font-heading text-2xl text-white">
                   Organika&apos;s Food
@@ -314,15 +313,13 @@ export default function LoginPage() {
             {/* Mobile logo (hidden on desktop) */}
             <div className="lg:hidden mb-8 text-center">
               <Link href="/" className="inline-flex items-center gap-2">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-fresh-green/10">
-                  <svg
-                    className="h-4 w-4 text-fresh-green"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75C7 8 17 8 17 8z" />
-                  </svg>
-                </span>
+                <Image
+                  src="/images/logo.png"
+                  alt="Organika's Food Logo"
+                  width={36}
+                  height={36}
+                  className="rounded-full"
+                />
                 <span className="font-heading text-xl text-deep-forest">
                   Organika&apos;s Food
                 </span>
