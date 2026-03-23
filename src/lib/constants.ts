@@ -11,12 +11,13 @@ export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://organikasfoods.com";
 
 export const WHATSAPP_NUMBER =
-  process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "91XXXXXXXXXX";
+  process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919834845240";
 
 // Footer / Contact
-export const CONTACT_EMAIL = "hello@organikasfoods.com";
-export const CONTACT_PHONE = "+91 XXXXX XXXXX";
-export const FSSAI_NUMBER = "XXXXXXXXXXXXXXXXX"; // TBD — owner to provide
+export const CONTACT_EMAIL = "organikasfoods@gmail.com";
+export const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "organikasfoods@gmail.com";
+export const CONTACT_PHONE = "+91 98348 45240";
+export const FSSAI_NUMBER = "21525043002244";
 
 // Shipping regions
 export const SHIPPING_REGIONS = ["Sangli", "Kolhapur", "Pune"] as const;

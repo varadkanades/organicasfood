@@ -231,6 +231,35 @@ export default function CheckoutPage() {
         await recordCouponUsage(appliedCoupon.coupon.id, user.id, order.id);
       }
 
+      // Send order notification emails (fire-and-forget — don't block checkout)
+      fetch("/api/send-order-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderNumber: order.order_number,
+          customerName: form.fullName.trim(),
+          customerEmail: form.email.trim(),
+          customerPhone: form.phone.trim(),
+          address: form.address.trim(),
+          city: form.city.trim(),
+          state: form.state.trim(),
+          pincode: form.pincode.trim(),
+          items: items.map((item) => ({
+            name: item.name,
+            size: item.size,
+            price: item.price,
+            quantity: item.quantity,
+          })),
+          subtotal: totalPrice,
+          shipping,
+          discount,
+          couponCode: appliedCoupon?.coupon.code,
+          total,
+          paymentMethod: "cod",
+          notes: notes.trim() || undefined,
+        }),
+      }).catch(() => {}); // Silently ignore email errors
+
       clearCart();
       router.push(`/order-confirmation?order=${order.order_number}`);
     } catch (err: unknown) {

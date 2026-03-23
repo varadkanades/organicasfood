@@ -184,6 +184,7 @@ export default function LoginPage() {
   // ── Google sign-in ───────────────────────────────────────────────────────
   async function handleGoogleSignIn() {
     setIsGoogleLoading(true);
+    setErrors({});
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
@@ -192,9 +193,16 @@ export default function LoginPage() {
         },
       });
       if (error) throw error;
+      // If no error, browser will redirect — set a timeout to reset loading
+      // in case redirect doesn't happen (e.g. popup blocked)
+      setTimeout(() => setIsGoogleLoading(false), 5000);
     } catch (err: unknown) {
       const message =
-        err instanceof Error ? err.message : "Google sign-in failed. Please try again.";
+        err instanceof Error
+          ? err.message.includes("provider")
+            ? "Google sign-in is temporarily unavailable. Please use email and password."
+            : err.message
+          : "Google sign-in failed. Please try again.";
       setErrors({ general: message });
       setIsGoogleLoading(false);
     }
