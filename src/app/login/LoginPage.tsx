@@ -245,15 +245,15 @@ export default function LoginPage() {
               <Image
                 src="/images/logo.png"
                 alt="Organika's Food Logo"
-                width={48}
-                height={48}
+                width={56}
+                height={56}
                 className="rounded-full bg-white/10 group-hover:bg-white/15 transition-colors"
               />
               <div>
-                <span className="font-heading text-2xl text-white">
+                <span className="font-heading text-3xl text-white">
                   Organika&apos;s Food
                 </span>
-                <span className="block text-[10px] font-medium tracking-[0.25em] uppercase text-white/40">
+                <span className="block text-[11px] font-medium tracking-[0.25em] uppercase text-white/40">
                   100% Natural
                 </span>
               </div>
@@ -316,11 +316,11 @@ export default function LoginPage() {
                 <Image
                   src="/images/logo.png"
                   alt="Organika's Food Logo"
-                  width={36}
-                  height={36}
+                  width={44}
+                  height={44}
                   className="rounded-full"
                 />
-                <span className="font-heading text-xl text-deep-forest">
+                <span className="font-heading text-2xl text-deep-forest">
                   Organika&apos;s Food
                 </span>
               </Link>

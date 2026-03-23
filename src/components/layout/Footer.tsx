@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import Container from "@/components/ui/Container";
 import {
   SITE_NAME,
@@ -27,15 +28,13 @@ export default function Footer() {
           {/* Brand Column */}
           <div className="sm:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10">
-                <svg
-                  className="h-4 w-4 text-sage-green"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75C7 8 17 8 17 8z" />
-                </svg>
-              </span>
+              <Image
+                src="/images/logo.png"
+                alt="Organika's Food Logo"
+                width={36}
+                height={36}
+                className="rounded-full"
+              />
               <span className="font-heading text-xl text-white">
                 {SITE_NAME}
               </span>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ShoppingBag, Search, Menu, X, LogOut, User } from "lucide-react";
 import Container from "@/components/ui/Container";
@@ -73,26 +74,13 @@ export default function Header() {
               href="/"
               className="relative z-10 flex items-center gap-2 group"
             >
-              {/* Small leaf accent */}
-              <span
-                className={cn(
-                  "flex h-8 w-8 items-center justify-center rounded-full transition-colors duration-300",
-                  isTransparent
-                    ? "bg-white/15"
-                    : "bg-fresh-green/10 group-hover:bg-fresh-green/20"
-                )}
-              >
-                <svg
-                  className={cn(
-                    "h-4 w-4 transition-colors duration-300",
-                    isTransparent ? "text-white" : "text-fresh-green"
-                  )}
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75C7 8 17 8 17 8z" />
-                </svg>
-              </span>
+              <Image
+                src="/images/logo.png"
+                alt="Organika's Food Logo"
+                width={36}
+                height={36}
+                className="rounded-full transition-all duration-300"
+              />
               <div className="flex flex-col">
                 <span
                   className={cn(
