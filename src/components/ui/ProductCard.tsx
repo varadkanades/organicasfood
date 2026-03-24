@@ -12,6 +12,8 @@ export interface ProductCardProps {
   tagline: string;
   description: string;
   price: number;
+  originalPrice?: number;
+  discountPercent?: number;
   unit: string; // e.g. "100g"
   slug: string;
   imageSrc: string;
@@ -26,6 +28,8 @@ export function ProductCard({
   tagline,
   description,
   price,
+  originalPrice,
+  discountPercent,
   unit,
   slug,
   imageSrc,
@@ -76,6 +80,12 @@ export function ProductCard({
           {badge}
         </div>
       )}
+      {/* Discount badge */}
+      {discountPercent && discountPercent > 0 && (
+        <div className="absolute top-4 right-4 z-10 px-2.5 py-1 rounded-full bg-red-500 text-white text-xs font-bold">
+          {discountPercent}% OFF
+        </div>
+      )}
 
       {/* Image area */}
       <div
@@ -95,12 +105,7 @@ export function ProductCard({
           /* Placeholder when image not yet added */
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4">
             <span className="text-6xl">{emoji}</span>
-            <p className="text-xs text-center text-mid-gray/60">
-              Add image at{" "}
-              <code className="text-[10px] bg-white/70 px-1 rounded">
-                public/images/products/{slug}.jpg
-              </code>
-            </p>
+            <p className="text-xs text-center text-mid-gray/60">No image available</p>
           </div>
         )}
 
@@ -130,6 +135,11 @@ export function ProductCard({
             <span className="text-xl font-bold text-deep-forest">
               {formattedPrice}
             </span>
+            {originalPrice && discountPercent && discountPercent > 0 && (
+              <span className="text-sm text-mid-gray line-through ml-1.5">
+                {new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(originalPrice)}
+              </span>
+            )}
             <span className="text-xs text-mid-gray ml-1">/ {unit}</span>
           </div>
           <span className="text-xs bg-leaf-green/10 text-deep-forest px-2 py-1 rounded-full font-medium">

@@ -27,6 +27,7 @@ export interface Product {
   usage: string[];
   ingredients: string;
   shelfLife: string;
+  discountPercent?: number; // 0-99, applied to all sizes
 }
 
 export const PRODUCTS: Product[] = [
@@ -198,10 +199,21 @@ export function getDefaultPrice(product: Product): number {
 /** Get display price for a product (the middle/main size) */
 export function getDisplayPrice(product: Product): {
   price: number;
+  originalPrice: number;
   unit: string;
+  discountPercent: number;
 } {
   // Use the second size as the "display" price, or first if only one
   const sizeIndex = product.sizes.length > 1 ? 1 : 0;
   const size = product.sizes[sizeIndex];
-  return { price: size.price, unit: size.weight };
+  const dp = product.discountPercent ?? 0;
+  const originalPrice = size.price;
+  const price = dp > 0 ? Math.round(originalPrice * (1 - dp / 100)) : originalPrice;
+  return { price, originalPrice, unit: size.weight, discountPercent: dp };
+}
+
+/** Apply discount to a specific price */
+export function applyDiscount(price: number, discountPercent: number): number {
+  if (discountPercent <= 0) return price;
+  return Math.round(price * (1 - discountPercent / 100));
 }

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, User, Phone, ArrowLeft, Loader2 } from "lucide-react";
 import Button from "@/components/ui/Button";
@@ -73,12 +73,23 @@ function LeafDecoration({ className }: { className?: string }) {
 // ── Main Login Component ─────────────────────────────────────────────────────
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [mode, setMode] = useState<AuthMode>("login");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  // Handle error query params from auth callback
+  useEffect(() => {
+    const errorParam = searchParams.get("error");
+    if (errorParam === "auth_failed") {
+      setErrors({ general: "Your verification link may have expired. Please try signing up again." });
+    }
+  }, [searchParams]);
 
   // Form fields
   const [name, setName] = useState("");
@@ -166,9 +177,7 @@ export default function LoginPage() {
 
         // Check if email confirmation is required
         if (data.user && !data.session) {
-          setErrors({
-            general: "Check your email for a confirmation link to complete signup.",
-          });
+          setSuccessMessage("Check your email for a confirmation link to complete signup. Don't forget to check your spam folder.");
         } else {
           router.push("/");
         }
@@ -361,6 +370,40 @@ export default function LoginPage() {
                 transition={{ type: "spring", stiffness: 400, damping: 30 }}
               />
             </div>
+
+            {/* Success message (email verification) */}
+            <AnimatePresence mode="wait">
+              {successMessage && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  className="mb-6 p-4 rounded-xl bg-green-50 border border-green-200"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="w-1.5 h-1.5 mt-1.5 rounded-full bg-green-500 shrink-0" />
+                    <p className="text-sm text-green-800 leading-snug">{successMessage}</p>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={resendCooldown > 0}
+                    onClick={async () => {
+                      await supabase.auth.resend({ type: "signup", email });
+                      setResendCooldown(60);
+                      const interval = setInterval(() => {
+                        setResendCooldown((c) => {
+                          if (c <= 1) { clearInterval(interval); return 0; }
+                          return c - 1;
+                        });
+                      }, 1000);
+                    }}
+                    className="mt-2 ml-4 text-xs font-medium text-green-700 hover:text-green-900 underline disabled:opacity-50 disabled:no-underline"
+                  >
+                    {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend verification email"}
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* General error */}
             <AnimatePresence mode="wait">

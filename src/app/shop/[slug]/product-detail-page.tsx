@@ -12,6 +12,7 @@ import {
   getProductBySlug,
   getProductsByCategory,
   PRODUCTS,
+  applyDiscount,
   type Product,
   type ProductSize,
 } from "@/data/products";
@@ -28,15 +29,19 @@ function SizeSelector({
   selected,
   onSelect,
   accentColor,
+  discountPercent = 0,
 }: {
   sizes: ProductSize[];
   selected: number;
   onSelect: (i: number) => void;
   accentColor: string;
+  discountPercent?: number;
 }) {
   return (
     <div className="flex gap-3">
-      {sizes.map((size, i) => (
+      {sizes.map((size, i) => {
+        const discounted = applyDiscount(size.price, discountPercent);
+        return (
         <button
           key={size.weight}
           onClick={() => onSelect(i)}
@@ -58,7 +63,10 @@ function SizeSelector({
               selected === i ? "text-deep-forest" : "text-mid-gray"
             }`}
           >
-            {formatPrice(size.price)}
+            {formatPrice(discounted)}
+            {discountPercent > 0 && (
+              <span className="line-through ml-1 text-mid-gray/60">{formatPrice(size.price)}</span>
+            )}
           </span>
           {!size.inStock && (
             <span className="absolute -top-2 -right-2 bg-red-100 text-red-600 text-[10px] font-medium px-1.5 py-0.5 rounded-full">
@@ -66,7 +74,8 @@ function SizeSelector({
             </span>
           )}
         </button>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -243,6 +252,8 @@ export default function ProductDetailPage() {
   }
 
   const currentSize = product.sizes[selectedSize];
+  const dp = product.discountPercent ?? 0;
+  const discountedCurrentPrice = applyDiscount(currentSize.price, dp);
   const whatsappUrl = getWhatsAppUrl(
     WHATSAPP_NUMBER,
     getWhatsAppOrderMessage(product.name, currentSize.weight)
@@ -356,14 +367,25 @@ export default function ProductDetailPage() {
                   selected={selectedSize}
                   onSelect={setSelectedSize}
                   accentColor={product.accentColor}
+                  discountPercent={dp}
                 />
               </div>
 
               {/* Price display */}
               <div className="flex items-baseline gap-3 mb-8">
                 <span className="text-3xl font-bold text-deep-forest">
-                  {formatPrice(currentSize.price)}
+                  {formatPrice(discountedCurrentPrice)}
                 </span>
+                {dp > 0 && (
+                  <span className="text-lg text-mid-gray line-through">
+                    {formatPrice(currentSize.price)}
+                  </span>
+                )}
+                {dp > 0 && (
+                  <span className="text-sm font-semibold text-red-500">
+                    {dp}% OFF
+                  </span>
+                )}
                 <span className="text-sm text-mid-gray">
                   / {currentSize.weight}
                 </span>
@@ -405,7 +427,7 @@ export default function ProductDetailPage() {
                       slug: product.slug,
                       image: product.imageSrc,
                       size: currentSize.weight,
-                      price: currentSize.price,
+                      price: discountedCurrentPrice,
                       quantity: 1,
                     });
                     setAdded(true);

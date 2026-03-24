@@ -47,7 +47,7 @@ function ShopProductCard({
     return () => observer.disconnect();
   }, [index]);
 
-  const { price, unit } = getDisplayPrice(product);
+  const { price, originalPrice, unit, discountPercent } = getDisplayPrice(product);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -83,6 +83,12 @@ function ShopProductCard({
                 style={{ backgroundColor: product.accentColor }}
               >
                 {product.badge}
+              </div>
+            )}
+            {/* Discount badge */}
+            {discountPercent > 0 && (
+              <div className="absolute top-4 right-4 z-10 px-2.5 py-1 rounded-full bg-red-500 text-white text-xs font-bold">
+                {discountPercent}% OFF
               </div>
             )}
 
@@ -124,6 +130,11 @@ function ShopProductCard({
                 <span className="text-xl font-bold text-deep-forest">
                   {formatPrice(price)}
                 </span>
+                {discountPercent > 0 && (
+                  <span className="text-sm text-mid-gray line-through ml-1.5">
+                    {formatPrice(originalPrice)}
+                  </span>
+                )}
                 <span className="text-xs text-mid-gray ml-1">/ {unit}</span>
               </div>
               <span className="text-xs text-mid-gray">

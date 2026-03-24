@@ -30,8 +30,16 @@ export interface SupabaseProduct {
   ingredients: string;
   shelf_life: string;
   featured: boolean;
+  discount_percent: number;
   created_at: string;
   updated_at: string;
+}
+
+// ── Discount helper ──────────────────────────────────────────────────────────
+
+export function getDiscountedPrice(price: number, discountPercent: number): number {
+  if (discountPercent <= 0) return price;
+  return Math.round(price * (1 - discountPercent / 100));
 }
 
 // Input type for creating/updating (no id, created_at, updated_at)

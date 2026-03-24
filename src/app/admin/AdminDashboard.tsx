@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Plus,
   Pencil,
@@ -16,6 +17,7 @@ import {
   Check,
   Loader2,
   Tag,
+  Upload,
 } from "lucide-react";
 import Container from "@/components/ui/Container";
 import { cn } from "@/lib/utils";
@@ -30,6 +32,7 @@ import {
   type ProductInput,
 } from "@/lib/supabase-products";
 import CouponManager from "@/components/admin/CouponManager";
+import { supabase } from "@/lib/supabase";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -53,6 +56,7 @@ interface FormData {
   ingredients: string;
   shelf_life: string;
   featured: boolean;
+  discount_percent: number;
 }
 
 const EMPTY_FORM: FormData = {
@@ -73,6 +77,7 @@ const EMPTY_FORM: FormData = {
   ingredients: "",
   shelf_life: "12 months from date of packaging",
   featured: false,
+  discount_percent: 0,
 };
 
 // ── Helper: generate slug from name ───────────────────────────────────────────
@@ -97,6 +102,9 @@ export default function AdminDashboard() {
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
   const [isSaving, setIsSaving] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -167,8 +175,11 @@ export default function AdminDashboard() {
       ingredients: product.ingredients,
       shelf_life: product.shelf_life,
       featured: product.featured,
+      discount_percent: product.discount_percent ?? 0,
     });
     setEditingProductId(product.id);
+    setImageFile(null);
+    setImagePreview(null);
     setViewMode("form");
     setError(null);
   };
@@ -177,6 +188,8 @@ export default function AdminDashboard() {
     setViewMode("list");
     setEditingProductId(null);
     setFormData(EMPTY_FORM);
+    setImageFile(null);
+    setImagePreview(null);
     setError(null);
   };
 
@@ -207,13 +220,35 @@ export default function AdminDashboard() {
     setError(null);
 
     try {
+      // Upload image if a new file was selected
+      let imageSrc = formData.image_src.trim();
+      if (imageFile) {
+        setIsUploadingImage(true);
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) throw new Error("Not authenticated");
+
+        const uploadForm = new window.FormData();
+        uploadForm.append("file", imageFile);
+        uploadForm.append("slug", formData.slug.trim());
+
+        const res = await fetch("/api/upload/product-image", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${session.access_token}` },
+          body: uploadForm,
+        });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || "Image upload failed");
+        imageSrc = result.url;
+        setIsUploadingImage(false);
+      }
+
       const productInput: ProductInput = {
         name: formData.name.trim(),
         tagline: formData.tagline.trim(),
         description: formData.description.trim(),
         long_description: formData.long_description.trim(),
         slug: formData.slug.trim(),
-        image_src: formData.image_src.trim(),
+        image_src: imageSrc,
         badge: formData.badge.trim() || null,
         color: formData.color.trim(),
         accent_color: formData.accent_color.trim(),
@@ -225,6 +260,7 @@ export default function AdminDashboard() {
         ingredients: formData.ingredients.trim(),
         shelf_life: formData.shelf_life.trim(),
         featured: formData.featured,
+        discount_percent: formData.discount_percent,
       };
 
       if (editingProductId) {
@@ -886,22 +922,71 @@ export default function AdminDashboard() {
                   Appearance
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
+                  <div className="sm:col-span-2">
                     <label className="block text-sm font-medium text-rich-black mb-1.5">
-                      Image Path
+                      Product Image
                     </label>
-                    <input
-                      type="text"
-                      value={formData.image_src}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          image_src: e.target.value,
-                        }))
-                      }
-                      placeholder="/images/products/example.jpg"
-                      className="w-full h-11 px-4 rounded-lg border border-soft-stone bg-warm-cream/50 text-rich-black text-sm placeholder:text-mid-gray/50 focus:outline-none focus:ring-2 focus:ring-fresh-green/40 focus:border-fresh-green transition-colors font-mono text-xs"
-                    />
+                    {/* Preview */}
+                    {(imagePreview || formData.image_src) && (
+                      <div className="relative w-32 h-32 mb-3 rounded-xl overflow-hidden border border-soft-stone bg-warm-cream/50">
+                        <Image
+                          src={imagePreview || formData.image_src}
+                          alt="Preview"
+                          fill
+                          className="object-cover"
+                          unoptimized={!!imagePreview}
+                        />
+                      </div>
+                    )}
+                    <div className="flex items-center gap-3">
+                      <label className="flex items-center gap-2 px-4 h-11 rounded-lg border border-soft-stone bg-warm-cream/50 text-sm text-rich-black cursor-pointer hover:border-fresh-green/40 transition-colors">
+                        <Upload className="w-4 h-4 text-mid-gray" />
+                        {imageFile ? imageFile.name : "Choose image"}
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setImageFile(file);
+                              setImagePreview(URL.createObjectURL(file));
+                            }
+                          }}
+                        />
+                      </label>
+                      {imageFile && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setImageFile(null);
+                            setImagePreview(null);
+                          }}
+                          className="text-xs text-red-500 hover:text-red-700"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                    {isUploadingImage && (
+                      <p className="mt-2 text-xs text-mid-gray flex items-center gap-1.5">
+                        <Loader2 className="w-3 h-3 animate-spin" /> Uploading image...
+                      </p>
+                    )}
+                    {!imageFile && (
+                      <input
+                        type="text"
+                        value={formData.image_src}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            image_src: e.target.value,
+                          }))
+                        }
+                        placeholder="Or enter image URL/path manually"
+                        className="mt-2 w-full h-9 px-3 rounded-lg border border-soft-stone bg-warm-cream/50 text-rich-black text-xs placeholder:text-mid-gray/50 focus:outline-none focus:ring-2 focus:ring-fresh-green/40 focus:border-fresh-green transition-colors font-mono"
+                      />
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-rich-black mb-1.5">
@@ -982,6 +1067,26 @@ export default function AdminDashboard() {
                       placeholder="bg-green-50"
                       className="w-full h-11 px-4 rounded-lg border border-soft-stone bg-warm-cream/50 text-rich-black text-sm font-mono focus:outline-none focus:ring-2 focus:ring-fresh-green/40 focus:border-fresh-green transition-colors"
                     />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-rich-black mb-1.5">
+                      Discount %
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={99}
+                      value={formData.discount_percent}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          discount_percent: Math.min(99, Math.max(0, parseInt(e.target.value) || 0)),
+                        }))
+                      }
+                      placeholder="0"
+                      className="w-full h-11 px-4 rounded-lg border border-soft-stone bg-warm-cream/50 text-rich-black text-sm placeholder:text-mid-gray/50 focus:outline-none focus:ring-2 focus:ring-fresh-green/40 focus:border-fresh-green transition-colors"
+                    />
+                    <p className="mt-1 text-xs text-mid-gray">Set 0 for no discount</p>
                   </div>
                   <div className="flex items-center gap-3 self-end">
                     <label className="flex items-center gap-2 cursor-pointer select-none">
