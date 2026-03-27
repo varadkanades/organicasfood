@@ -181,19 +181,34 @@ export default function Header() {
               {!isLoading && (
                 <>
                   {user ? (
-                    <button
-                      onClick={signOut}
-                      className={cn(
-                        "relative flex h-10 w-10 items-center justify-center rounded-lg transition-colors duration-200",
-                        isTransparent
-                          ? "text-white/70 hover:bg-white/10 hover:text-white"
-                          : "text-mid-gray hover:bg-soft-stone/50 hover:text-rich-black"
-                      )}
-                      aria-label="Sign out"
-                      title="Sign out"
-                    >
-                      <LogOut className="h-[18px] w-[18px]" strokeWidth={2} />
-                    </button>
+                    <>
+                      <Link
+                        href="/account/orders"
+                        className={cn(
+                          "relative flex h-10 w-10 items-center justify-center rounded-lg transition-colors duration-200",
+                          isTransparent
+                            ? "text-white/70 hover:bg-white/10 hover:text-white"
+                            : "text-mid-gray hover:bg-soft-stone/50 hover:text-rich-black"
+                        )}
+                        aria-label="My orders"
+                        title="My Orders"
+                      >
+                        <User className="h-[18px] w-[18px]" strokeWidth={2} />
+                      </Link>
+                      <button
+                        onClick={signOut}
+                        className={cn(
+                          "relative flex h-10 w-10 items-center justify-center rounded-lg transition-colors duration-200",
+                          isTransparent
+                            ? "text-white/70 hover:bg-white/10 hover:text-white"
+                            : "text-mid-gray hover:bg-soft-stone/50 hover:text-rich-black"
+                        )}
+                        aria-label="Sign out"
+                        title="Sign out"
+                      >
+                        <LogOut className="h-[18px] w-[18px]" strokeWidth={2} />
+                      </button>
+                    </>
                   ) : (
                     <Link
                       href="/login"

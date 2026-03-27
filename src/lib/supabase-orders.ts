@@ -190,6 +190,25 @@ export async function updateOrderStatus(
   return data as SupabaseOrder;
 }
 
+// ── Fetch orders by user ID ──────────────────────────────────────────────────
+
+export async function fetchUserOrders(
+  userId: string
+): Promise<SupabaseOrder[]> {
+  const { data, error } = await supabase
+    .from("orders")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching user orders:", error.message);
+    throw new Error(error.message);
+  }
+
+  return data as SupabaseOrder[];
+}
+
 // ── Update payment status (admin) ─────────────────────────────────────────────
 
 export async function updatePaymentStatus(

@@ -85,6 +85,14 @@ export default function Footer() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link
+                  href="/account/orders"
+                  className="text-sm text-white/60 transition-colors duration-200 hover:text-white"
+                >
+                  My Orders
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -154,9 +162,17 @@ export default function Footer() {
             &copy; {currentYear} {SITE_NAME}. All rights reserved.
           </p>
           <div className="flex items-center gap-4 text-xs text-white/40">
-            <span>FSSAI: {FSSAI_NUMBER}</span>
+            <Link href="/pages/terms" className="hover:text-white/70 transition-colors">
+              Terms
+            </Link>
+            <Link href="/pages/privacy" className="hover:text-white/70 transition-colors">
+              Privacy
+            </Link>
+            <Link href="/pages/return-policy" className="hover:text-white/70 transition-colors">
+              Returns
+            </Link>
             <span className="hidden sm:inline">&middot;</span>
-            <span className="hidden sm:inline">India</span>
+            <span>FSSAI: {FSSAI_NUMBER}</span>
           </div>
         </Container>
       </div>

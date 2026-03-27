@@ -14,6 +14,8 @@ import {
   Copy,
   Check,
   Loader2,
+  MessageCircle,
+  X,
 } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
@@ -32,6 +34,7 @@ export default function OrderConfirmation() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
 
   useEffect(() => {
     async function loadOrder() {
@@ -57,6 +60,26 @@ export default function OrderConfirmation() {
 
     loadOrder();
   }, [orderNumber]);
+
+  // Show WhatsApp confirmation reminder after 3 seconds
+  useEffect(() => {
+    if (!order) return;
+    const dismissed = sessionStorage.getItem(`wa-confirmed-${order.order_number}`);
+    if (dismissed) return;
+
+    const timer = setTimeout(() => {
+      setShowWhatsAppModal(true);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [order]);
+
+  const dismissWhatsAppModal = (confirmed: boolean) => {
+    if (order && confirmed) {
+      sessionStorage.setItem(`wa-confirmed-${order.order_number}`, "true");
+    }
+    setShowWhatsAppModal(false);
+  };
 
   const copyOrderNumber = () => {
     if (order?.order_number) {
@@ -303,6 +326,57 @@ export default function OrderConfirmation() {
           </div>
         </div>
       </Container>
+
+      {/* WhatsApp Confirmation Modal */}
+      {showWhatsAppModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => dismissWhatsAppModal(false)}
+          />
+          <div className="relative bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center">
+            <button
+              onClick={() => dismissWhatsAppModal(false)}
+              className="absolute top-3 right-3 p-1.5 rounded-lg text-mid-gray hover:bg-soft-stone/50 transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            <div className="w-14 h-14 rounded-full bg-[#25D366]/10 flex items-center justify-center mx-auto mb-4">
+              <MessageCircle className="h-7 w-7 text-[#25D366]" />
+            </div>
+
+            <h3 className="font-heading text-lg text-deep-forest mb-2">
+              Did you confirm on WhatsApp?
+            </h3>
+            <p className="text-sm text-mid-gray mb-6">
+              Please send us the order message on WhatsApp to confirm your order and start processing.
+            </p>
+
+            <div className="flex flex-col gap-2.5">
+              <button
+                onClick={() => dismissWhatsAppModal(true)}
+                className="w-full h-11 rounded-lg bg-fresh-green text-white text-sm font-medium hover:bg-fresh-green/90 transition-colors"
+              >
+                Yes, I confirmed
+              </button>
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => dismissWhatsAppModal(false)}
+                className="w-full h-11 rounded-lg bg-[#25D366] text-white text-sm font-medium hover:bg-[#20BD5A] transition-colors flex items-center justify-center gap-2"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+                  <path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.5.5 0 00.611.611l4.458-1.495A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.315 0-4.458-.766-6.183-2.059l-.432-.324-2.645.887.887-2.645-.324-.432A9.935 9.935 0 012 12C2 6.486 6.486 2 12 2s10 4.486 10 10-4.486 10-10 10z" />
+                </svg>
+                Open WhatsApp
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

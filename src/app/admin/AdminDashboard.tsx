@@ -17,6 +17,8 @@ import {
   Check,
   Loader2,
   Tag,
+  ClipboardList,
+  FileText,
   Upload,
 } from "lucide-react";
 import Container from "@/components/ui/Container";
@@ -32,6 +34,8 @@ import {
   type ProductInput,
 } from "@/lib/supabase-products";
 import CouponManager from "@/components/admin/CouponManager";
+import OrderManager from "@/components/admin/OrderManager";
+import PageManager from "@/components/admin/PageManager";
 import { supabase } from "@/lib/supabase";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -95,7 +99,7 @@ function generateSlug(name: string): string {
 
 export default function AdminDashboard() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<"products" | "coupons">("products");
+  const [activeTab, setActiveTab] = useState<"products" | "coupons" | "orders" | "pages">("products");
   const [products, setProducts] = useState<SupabaseProduct[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
@@ -423,7 +427,9 @@ export default function AdminDashboard() {
         <div className="flex gap-1 mt-6 border-b border-soft-stone">
           {([
             { key: "products" as const, label: "Products", icon: Package },
+            { key: "orders" as const, label: "Orders", icon: ClipboardList },
             { key: "coupons" as const, label: "Coupons", icon: Tag },
+            { key: "pages" as const, label: "Pages", icon: FileText },
           ]).map(({ key, label, icon: Icon }) => (
             <button
               key={key}
@@ -1256,10 +1262,24 @@ export default function AdminDashboard() {
         )}
         </>)}
 
+        {/* ── ORDERS TAB ── */}
+        {activeTab === "orders" && (
+          <div className="mt-8">
+            <OrderManager />
+          </div>
+        )}
+
         {/* ── COUPONS TAB ── */}
         {activeTab === "coupons" && (
           <div className="mt-8">
             <CouponManager />
+          </div>
+        )}
+
+        {/* ── PAGES TAB ── */}
+        {activeTab === "pages" && (
+          <div className="mt-8">
+            <PageManager />
           </div>
         )}
       </Container>

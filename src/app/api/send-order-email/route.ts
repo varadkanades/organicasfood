@@ -134,14 +134,20 @@ function buildCustomerEmailHtml(order: OrderEmailData): string {
 }
 
 export async function POST(request: Request) {
+  console.log("[Order Email] POST request received");
+  console.log("[Order Email] RESEND_API_KEY set:", !!process.env.RESEND_API_KEY);
+  console.log("[Order Email] FROM_EMAIL:", FROM_EMAIL);
+  console.log("[Order Email] ADMIN_EMAIL:", ADMIN_EMAIL);
+
   try {
     const resend = getResend();
     if (!resend) {
-      console.warn("RESEND_API_KEY not set — skipping order emails");
+      console.warn("[Order Email] RESEND_API_KEY not set — skipping order emails");
       return NextResponse.json({ success: false, reason: "no_api_key" });
     }
 
     const order: OrderEmailData = await request.json();
+    console.log("[Order Email] Sending for order:", order.orderNumber);
 
     // Send admin notification
     const adminResult = await resend.emails.send({
@@ -151,23 +157,37 @@ export async function POST(request: Request) {
       html: buildAdminEmailHtml(order),
     });
 
-    // Send customer confirmation (fire-and-forget)
+    if (adminResult.error) {
+      console.error("[Order Email] Admin email error:", JSON.stringify(adminResult.error));
+      return NextResponse.json(
+        { success: false, error: adminResult.error.message },
+        { status: 400 }
+      );
+    }
+
+    console.log("[Order Email] Admin email sent:", adminResult.data?.id);
+
+    // Send customer confirmation
     if (order.customerEmail) {
-      resend.emails
-        .send({
-          from: `Organika's Food <${FROM_EMAIL}>`,
-          to: order.customerEmail,
-          subject: `Order Confirmed #${order.orderNumber} — Organika's Food`,
-          html: buildCustomerEmailHtml(order),
-        })
-        .catch((err) => console.error("Customer email failed:", err));
+      const customerResult = await resend.emails.send({
+        from: `Organika's Food <${FROM_EMAIL}>`,
+        to: order.customerEmail,
+        subject: `Order Confirmed #${order.orderNumber} — Organika's Food`,
+        html: buildCustomerEmailHtml(order),
+      });
+
+      if (customerResult.error) {
+        console.error("[Order Email] Customer email error:", JSON.stringify(customerResult.error));
+      } else {
+        console.log("[Order Email] Customer email sent:", customerResult.data?.id);
+      }
     }
 
     return NextResponse.json({ success: true, id: adminResult.data?.id });
   } catch (error) {
-    console.error("Order email error:", error);
+    console.error("[Order Email] Unexpected error:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to send email" },
+      { success: false, error: error instanceof Error ? error.message : "Failed to send email" },
       { status: 500 }
     );
   }
