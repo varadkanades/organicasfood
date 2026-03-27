@@ -20,7 +20,7 @@ export default function CartSummary() {
 
       {/* Shipping note */}
       <p className="text-xs text-mid-gray/70 mb-4">
-        Free delivery within Sangli, Kolhapur & Pune
+        Shipping calculated at checkout
       </p>
 
       {/* Divider */}

@@ -2,6 +2,8 @@
 
 import { useRef, useEffect, useState } from "react";
 import Container from "@/components/ui/Container";
+import { getWhatsAppUrl } from "@/lib/utils";
+import { WHATSAPP_NUMBER } from "@/lib/constants";
 
 // ── Testimonial data ──────────────────────────────────────────────────────────
 // Replace with real testimonials as they come in.
@@ -10,7 +12,7 @@ const TESTIMONIALS = [
     quote:
       "I was sceptical at first — how can a powder taste fresh? One spoonful of the Coriander Leaf Powder in my dal and I was sold. The aroma is exactly like fresh coriander from the market.",
     name: "Priya Deshmukh",
-    location: "Pune",
+    location: "Mumbai",
     product: "Coriander Leaf Powder",
     initials: "PD",
   },
@@ -18,7 +20,7 @@ const TESTIMONIALS = [
     quote:
       "My daughter refuses to eat beetroot, but she doesn't even notice when I mix Organika's Beetroot Powder into her paratha dough. It's become my secret weapon — nutrition without the daily battle.",
     name: "Snehal Patil",
-    location: "Sangli",
+    location: "Bangalore",
     product: "Beetroot Powder",
     initials: "SP",
   },
@@ -26,7 +28,7 @@ const TESTIMONIALS = [
     quote:
       "As a working mother, I don't always have time to chop fresh vegetables. These powders save me time without compromising on nutrition. The Carrot Powder in my son's kheer? He loves it.",
     name: "Anjali Kulkarni",
-    location: "Kolhapur",
+    location: "Delhi",
     product: "Carrot Powder",
     initials: "AK",
   },
@@ -34,7 +36,7 @@ const TESTIMONIALS = [
     quote:
       "I use the Curry Leaves Powder daily in my chutney and sambhar. The flavour is strong and authentic — better than the dried curry leaves I used to get from stores. And it lasts so much longer.",
     name: "Revati Joshi",
-    location: "Pune",
+    location: "Chennai",
     product: "Curry Leaves Powder",
     initials: "RJ",
   },
@@ -168,7 +170,7 @@ export function Testimonials() {
           </h2>
           <p className="text-mid-gray max-w-xl mx-auto leading-relaxed">
             Don&apos;t take our word for it — hear from families across
-            Maharashtra who&apos;ve made Organika&apos;s powders a part of their
+            India who&apos;ve made Organika&apos;s powders a part of their
             daily kitchen.
           </p>
         </div>
@@ -194,7 +196,7 @@ export function Testimonials() {
             Loved our products? We&apos;d love to hear from you too.
           </p>
           <a
-            href="https://wa.me/919XXXXXXXXX?text=Hi%20Organika!%20I%20want%20to%20share%20my%20experience."
+            href={getWhatsAppUrl(WHATSAPP_NUMBER, "Hi Organika! I want to share my experience with your products.")}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 text-deep-forest font-medium text-sm hover:text-fresh-green transition-colors duration-300"

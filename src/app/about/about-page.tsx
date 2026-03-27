@@ -6,7 +6,7 @@ import Link from "next/link";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { WHATSAPP_NUMBER, SHIPPING_REGIONS } from "@/lib/constants";
+import { WHATSAPP_NUMBER } from "@/lib/constants";
 import { getWhatsAppUrl } from "@/lib/utils";
 
 // ── Process timeline steps ───────────────────────────────────────────────────
@@ -262,8 +262,7 @@ export default function AboutPage() {
                 <span className="italic text-sage-green">Difference?</span>
               </h2>
               <p className="text-white/60 leading-relaxed mb-8">
-                Join families across{" "}
-                {SHIPPING_REGIONS.join(", ")} who&apos;ve
+                Join families across India who&apos;ve
                 made Organika&apos;s powders a part of their daily kitchen.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

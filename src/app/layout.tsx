@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     template: "%s | Organika's Food",
   },
   description:
-    "Premium natural food powders. 100% vegan, preservative-free, FSSAI approved. Serving Sangli, Kolhapur & Pune.",
+    "Premium natural food powders. 100% vegan, preservative-free, FSSAI approved. Ships Pan-India & Internationally.",
 };
 
 export default function RootLayout({

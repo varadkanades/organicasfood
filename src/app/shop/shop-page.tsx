@@ -265,7 +265,7 @@ export default function ShopPage() {
           {/* Bottom trust line */}
           <p className="text-center text-xs text-mid-gray mt-16 tracking-wide">
             All products are FSSAI certified · Free from preservatives &
-            artificial colours · Ships across Sangli, Kolhapur & Pune
+            artificial colours · Ships Pan-India & Internationally
           </p>
         </Container>
       </section>

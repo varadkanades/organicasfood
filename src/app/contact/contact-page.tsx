@@ -9,7 +9,6 @@ import {
   WHATSAPP_NUMBER,
   CONTACT_EMAIL,
   CONTACT_PHONE,
-  SHIPPING_REGIONS,
   SITE_NAME,
 } from "@/lib/constants";
 import { getWhatsAppUrl } from "@/lib/utils";
@@ -81,9 +80,7 @@ const CONTACT_METHODS = [
 const FAQS = [
   {
     question: "Where do you deliver?",
-    answer: `We currently deliver across ${SHIPPING_REGIONS.join(
-      ", "
-    )} in Maharashtra. We're expanding to more cities soon. For bulk or outstation orders, please reach out on WhatsApp.`,
+    answer: "We ship Pan-India and Internationally. For bulk or international orders, please reach out on WhatsApp.",
   },
   {
     question: "How do I place an order?",
@@ -98,7 +95,7 @@ const FAQS = [
   {
     question: "How long does delivery take?",
     answer:
-      "Within Sangli: 1–2 days. Kolhapur and Pune: 2–4 days. We'll share tracking details on WhatsApp once your order is shipped.",
+      "Delivery typically takes 3–7 business days across India. We'll share tracking details on WhatsApp once your order is shipped.",
   },
   {
     question: "What's the shelf life of your powders?",
@@ -322,13 +319,13 @@ export default function ContactPage() {
           </AnimatedSection>
 
           <div className="flex flex-wrap items-center justify-center gap-4 mb-10">
-            {SHIPPING_REGIONS.map((region, i) => (
+            {["Pan-India", "International"].map((region, i) => (
               <AnimatedSection key={region} delay={i * 100}>
                 <div className="bg-white rounded-2xl px-8 py-6 border border-warm-stone/15 shadow-sm text-center min-w-[160px] transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
                   <p className="font-heading text-2xl text-deep-forest mb-1">
                     {region}
                   </p>
-                  <p className="text-xs text-mid-gray">Maharashtra</p>
+                  <p className="text-xs text-mid-gray">Shipping Available</p>
                 </div>
               </AnimatedSection>
             ))}
@@ -336,17 +333,17 @@ export default function ContactPage() {
 
           <AnimatedSection>
             <p className="text-center text-sm text-mid-gray">
-              Expanding to more cities soon.{" "}
+              Have questions about shipping?{" "}
               <a
                 href={getWhatsAppUrl(
                   WHATSAPP_NUMBER,
-                  "Hi! Do you deliver to my area?"
+                  "Hi! I have a question about shipping."
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-deep-forest font-medium hover:text-fresh-green transition-colors"
               >
-                Check if we deliver to your area →
+                Ask us on WhatsApp →
               </a>
             </p>
           </AnimatedSection>

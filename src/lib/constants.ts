@@ -19,8 +19,8 @@ export const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "organikasfoods@gmail.com"
 export const CONTACT_PHONE = "+91 98348 45240";
 export const FSSAI_NUMBER = "21525043002244";
 
-// Shipping regions
-export const SHIPPING_REGIONS = ["Sangli", "Kolhapur", "Pune"] as const;
+// Shipping
+export const SHIPPING_NOTE = "Ships Pan-India & Internationally";
 
 // Navigation
 export const NAV_LINKS = [

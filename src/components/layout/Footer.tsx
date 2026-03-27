@@ -8,7 +8,7 @@ import {
   CONTACT_PHONE,
   WHATSAPP_NUMBER,
   FSSAI_NUMBER,
-  SHIPPING_REGIONS,
+  SHIPPING_NOTE,
 } from "@/lib/constants";
 import { getWhatsAppUrl } from "@/lib/utils";
 
@@ -136,21 +136,12 @@ export default function Footer() {
               </li>
             </ul>
 
-            {/* Shipping Regions */}
+            {/* Shipping */}
             <div className="mt-6">
               <h4 className="text-xs font-semibold uppercase tracking-widest text-white/40 mb-3">
                 We Deliver To
               </h4>
-              <div className="flex flex-wrap gap-2">
-                {SHIPPING_REGIONS.map((region) => (
-                  <span
-                    key={region}
-                    className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-xs text-white/70"
-                  >
-                    {region}
-                  </span>
-                ))}
-              </div>
+              <p className="text-xs text-white/70">{SHIPPING_NOTE}</p>
             </div>
           </div>
         </div>
@@ -165,7 +156,7 @@ export default function Footer() {
           <div className="flex items-center gap-4 text-xs text-white/40">
             <span>FSSAI: {FSSAI_NUMBER}</span>
             <span className="hidden sm:inline">&middot;</span>
-            <span className="hidden sm:inline">Maharashtra, India</span>
+            <span className="hidden sm:inline">India</span>
           </div>
         </Container>
       </div>

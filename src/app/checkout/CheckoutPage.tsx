@@ -22,7 +22,8 @@ import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, getWhatsAppUrl } from "@/lib/utils";
+import { WHATSAPP_NUMBER } from "@/lib/constants";
 import { createOrder, type DeliveryDetails } from "@/lib/supabase-orders";
 import {
   validateCoupon,
@@ -64,14 +65,11 @@ const INDIAN_STATES = [
   "West Bengal",
 ];
 
-// ── Free shipping cities ──────────────────────────────────────────────────────
-
-const FREE_SHIPPING_CITIES = ["sangli", "kolhapur", "pune"];
+// ── Shipping cost ─────────────────────────────────────────────────────────────
 
 function getShippingCost(city: string): number {
-  const normalized = city.trim().toLowerCase();
-  if (FREE_SHIPPING_CITIES.includes(normalized)) return 0;
-  return 60;
+  if (!city.trim()) return 0;
+  return 60; // Flat ₹60 shipping — will be updated in Batch 2
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -98,7 +96,7 @@ export default function CheckoutPage() {
     address: "",
     city: "",
     pincode: "",
-    state: "Maharashtra",
+    state: "",
   });
   const [notes, setNotes] = useState("");
 
@@ -259,6 +257,11 @@ export default function CheckoutPage() {
           notes: notes.trim() || undefined,
         }),
       }).catch(() => {}); // Silently ignore email errors
+
+      // Send WhatsApp notification to admin with order details
+      const itemsList = items.map((i) => `${i.name} (${i.size}) x${i.quantity}`).join(", ");
+      const whatsAppMsg = `🛒 New Order: ${order.order_number}\n👤 ${form.fullName.trim()}\n📱 ${form.phone.trim()}\n📍 ${form.city.trim()}, ${form.state.trim()}\n📦 ${itemsList}\n💰 Total: ₹${total}\n💳 COD`;
+      window.open(getWhatsAppUrl(WHATSAPP_NUMBER, whatsAppMsg), "_blank");
 
       clearCart();
       router.push(`/order-confirmation?order=${order.order_number}`);
@@ -433,7 +436,7 @@ export default function CheckoutPage() {
                       type="text"
                       value={form.city}
                       onChange={(e) => updateField("city", e.target.value)}
-                      placeholder="e.g. Pune"
+                      placeholder="e.g. Mumbai"
                       className={inputClass("city")}
                     />
                     {fieldErrors.city && (
@@ -663,7 +666,7 @@ export default function CheckoutPage() {
 
               {isFreeShipping && (
                 <p className="text-xs text-fresh-green bg-fresh-green/5 rounded-lg px-3 py-2 mb-4">
-                  Free delivery for Sangli, Kolhapur & Pune!
+                  Free delivery on this order!
                 </p>
               )}
 

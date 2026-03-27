@@ -170,7 +170,7 @@ export default function ResetPasswordPage() {
 
           {/* Bottom — Footer text */}
           <p className="text-white/25 text-xs">
-            © 2026 Organika&apos;s Food. Sangli, Maharashtra.
+            © 2026 Organika&apos;s Food. India.
           </p>
         </div>
       </div>
