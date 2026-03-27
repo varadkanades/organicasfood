@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { ShoppingBag, Search, Menu, X, LogOut, User } from "lucide-react";
+import { ShoppingBag, Search, Menu, X, LogOut, User, Shield } from "lucide-react";
 import Container from "@/components/ui/Container";
 import MobileNav from "@/components/layout/MobileNav";
 import { NAV_LINKS, SITE_NAME } from "@/lib/constants";
@@ -182,6 +182,21 @@ export default function Header() {
                 <>
                   {user ? (
                     <>
+                      {role === "admin" && (
+                        <Link
+                          href="/admin"
+                          className={cn(
+                            "relative flex h-10 w-10 items-center justify-center rounded-lg transition-colors duration-200",
+                            isTransparent
+                              ? "text-white/70 hover:bg-white/10 hover:text-white"
+                              : "text-mid-gray hover:bg-soft-stone/50 hover:text-rich-black"
+                          )}
+                          aria-label="Admin dashboard"
+                          title="Admin Dashboard"
+                        >
+                          <Shield className="h-[18px] w-[18px]" strokeWidth={2} />
+                        </Link>
+                      )}
                       <Link
                         href="/account/orders"
                         className={cn(
