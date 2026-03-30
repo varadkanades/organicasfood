@@ -3,7 +3,16 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { LogOut, User } from "lucide-react";
+import {
+  LogOut,
+  User,
+  Package,
+  MapPin,
+  Settings,
+  HelpCircle,
+  FileText,
+  ShieldCheck,
+} from "lucide-react";
 import { NAV_LINKS, SITE_NAME, WHATSAPP_NUMBER } from "@/lib/constants";
 import { getWhatsAppUrl, cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
@@ -48,7 +57,7 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="fixed right-0 top-0 z-40 h-full w-[85%] max-w-sm bg-warm-cream shadow-2xl md:hidden"
+            className="fixed right-0 top-0 z-40 h-full w-[85%] max-w-sm bg-warm-cream shadow-2xl md:hidden overflow-y-auto"
           >
             <div className="flex h-full flex-col px-6 pt-20 pb-8">
               {/* Navigation Links */}
@@ -110,14 +119,95 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
                 )}
               </div>
 
+              {/* Account section — only for logged-in users */}
+              {!isLoading && user && (
+                <>
+                  <div className="my-4 h-px bg-soft-stone" />
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    <p className="text-[10px] font-semibold text-mid-gray/60 uppercase tracking-widest px-4 mb-2">
+                      My Account
+                    </p>
+                    <div className="flex flex-col gap-0.5">
+                      <Link
+                        href="/account/orders"
+                        onClick={onClose}
+                        className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-mid-gray hover:bg-soft-stone/60 hover:text-rich-black transition-colors"
+                      >
+                        <Package className="h-4 w-4" />
+                        My Orders
+                      </Link>
+                      <Link
+                        href="/account/addresses"
+                        onClick={onClose}
+                        className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-mid-gray hover:bg-soft-stone/60 hover:text-rich-black transition-colors"
+                      >
+                        <MapPin className="h-4 w-4" />
+                        Saved Addresses
+                      </Link>
+                      <Link
+                        href="/account/settings"
+                        onClick={onClose}
+                        className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-mid-gray hover:bg-soft-stone/60 hover:text-rich-black transition-colors"
+                      >
+                        <Settings className="h-4 w-4" />
+                        Settings
+                      </Link>
+                    </div>
+                  </motion.div>
+
+                  <div className="my-3 h-px bg-soft-stone" />
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.35 }}
+                  >
+                    <p className="text-[10px] font-semibold text-mid-gray/60 uppercase tracking-widest px-4 mb-2">
+                      Help & Info
+                    </p>
+                    <div className="flex flex-col gap-0.5">
+                      <Link
+                        href="/pages/faq"
+                        onClick={onClose}
+                        className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-mid-gray hover:bg-soft-stone/60 hover:text-rich-black transition-colors"
+                      >
+                        <HelpCircle className="h-4 w-4" />
+                        FAQ
+                      </Link>
+                      <Link
+                        href="/pages/terms"
+                        onClick={onClose}
+                        className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-mid-gray hover:bg-soft-stone/60 hover:text-rich-black transition-colors"
+                      >
+                        <FileText className="h-4 w-4" />
+                        Terms & Conditions
+                      </Link>
+                      <Link
+                        href="/pages/privacy"
+                        onClick={onClose}
+                        className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-mid-gray hover:bg-soft-stone/60 hover:text-rich-black transition-colors"
+                      >
+                        <ShieldCheck className="h-4 w-4" />
+                        Privacy Policy
+                      </Link>
+                    </div>
+                  </motion.div>
+                </>
+              )}
+
               {/* Divider */}
-              <div className="my-6 h-px bg-soft-stone" />
+              <div className="my-4 h-px bg-soft-stone" />
 
               {/* Quick Actions */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.35 }}
+                transition={{ delay: 0.4 }}
                 className="flex flex-col gap-3"
               >
                 <Link

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -17,6 +17,9 @@ import {
   Package,
   Tag,
   X,
+  Home,
+  Briefcase,
+  MapPinned,
 } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
@@ -30,6 +33,10 @@ import {
   recordCouponUsage,
 } from "@/lib/supabase-coupons";
 import type { AppliedCoupon } from "@/types/coupon";
+import {
+  fetchUserAddresses,
+  type SavedAddress,
+} from "@/lib/supabase-addresses";
 
 // ── Indian states for dropdown ────────────────────────────────────────────────
 
@@ -80,6 +87,60 @@ export default function CheckoutPage() {
 
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Saved addresses
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+
+  // Load saved addresses for logged-in users
+  useEffect(() => {
+    if (user?.id) {
+      fetchUserAddresses(user.id).then((addresses) => {
+        setSavedAddresses(addresses);
+        // Auto-select default address
+        const defaultAddr = addresses.find((a) => a.is_default);
+        if (defaultAddr) {
+          applyAddress(defaultAddr);
+          setSelectedAddressId(defaultAddr.id);
+        }
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
+  function applyAddress(addr: SavedAddress) {
+    setForm({
+      fullName: addr.full_name,
+      phone: addr.phone,
+      email: user?.email || "",
+      address: addr.address,
+      city: addr.city,
+      pincode: addr.pincode,
+      state: addr.state,
+    });
+    setFieldErrors({});
+  }
+
+  function handleSelectAddress(addrId: string) {
+    if (addrId === "") {
+      setSelectedAddressId(null);
+      setForm({
+        fullName: "",
+        phone: "",
+        email: user?.email || "",
+        address: "",
+        city: "",
+        pincode: "",
+        state: "",
+      });
+      return;
+    }
+    const addr = savedAddresses.find((a) => a.id === addrId);
+    if (addr) {
+      setSelectedAddressId(addrId);
+      applyAddress(addr);
+    }
+  }
 
   // Coupon state
   const [couponCode, setCouponCode] = useState("");
@@ -351,6 +412,52 @@ export default function CheckoutPage() {
               <h2 className="text-sm font-semibold text-mid-gray uppercase tracking-wider mb-5">
                 Delivery Details
               </h2>
+
+              {/* Saved address selector */}
+              {user && savedAddresses.length > 0 && (
+                <div className="mb-5">
+                  <label className="block text-sm font-medium text-rich-black mb-1.5">
+                    Use Saved Address
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {savedAddresses.map((addr) => {
+                      const isSelected = selectedAddressId === addr.id;
+                      const LabelIcon =
+                        addr.label === "Home"
+                          ? Home
+                          : addr.label === "Office"
+                            ? Briefcase
+                            : MapPinned;
+                      return (
+                        <button
+                          key={addr.id}
+                          onClick={() => handleSelectAddress(addr.id)}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-colors ${
+                            isSelected
+                              ? "border-fresh-green bg-fresh-green/5 text-fresh-green font-medium"
+                              : "border-soft-stone text-mid-gray hover:border-mid-gray"
+                          }`}
+                        >
+                          <LabelIcon className="h-3.5 w-3.5" />
+                          {addr.label}
+                          <span className="text-xs text-mid-gray/60">
+                            ({addr.city})
+                          </span>
+                        </button>
+                      );
+                    })}
+                    {selectedAddressId && (
+                      <button
+                        onClick={() => handleSelectAddress("")}
+                        className="flex items-center gap-1 px-3 py-2 rounded-lg border border-soft-stone text-xs text-mid-gray hover:border-mid-gray transition-colors"
+                      >
+                        <X className="h-3 w-3" />
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-4">
                 {/* Full Name */}

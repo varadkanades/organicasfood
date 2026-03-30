@@ -1,10 +1,25 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { ShoppingBag, Search, Menu, X, LogOut, User, Shield, Settings } from "lucide-react";
+import {
+  ShoppingBag,
+  Search,
+  Menu,
+  X,
+  LogOut,
+  User,
+  Shield,
+  Settings,
+  Package,
+  MapPin,
+  HelpCircle,
+  FileText,
+  ShieldCheck,
+  ChevronDown,
+} from "lucide-react";
 import Container from "@/components/ui/Container";
 import MobileNav from "@/components/layout/MobileNav";
 import { NAV_LINKS, SITE_NAME } from "@/lib/constants";
@@ -16,6 +31,8 @@ export default function Header() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
   const { toggleCart, totalItems } = useCart();
   const { user, role, isLoading, signOut } = useAuth();
 
@@ -35,7 +52,22 @@ export default function Header() {
   // Close mobile nav on route change
   useEffect(() => {
     setIsMobileNavOpen(false);
+    setIsProfileOpen(false);
   }, [pathname]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Prevent body scroll when mobile nav is open
   useEffect(() => {
@@ -51,6 +83,11 @@ export default function Header() {
 
   // Determine header visual state
   const isTransparent = isHomepage && !isScrolled;
+
+  const handleSignOut = async () => {
+    setIsProfileOpen(false);
+    await signOut();
+  };
 
   return (
     <>
@@ -177,11 +214,12 @@ export default function Header() {
                 )}
               </button>
 
-              {/* Auth button — Login link or Logout icon */}
+              {/* Auth — Login link or Profile dropdown */}
               {!isLoading && (
                 <>
                   {user ? (
                     <>
+                      {/* Admin link — only for admins */}
                       {role === "admin" && (
                         <Link
                           href="/admin"
@@ -197,45 +235,120 @@ export default function Header() {
                           <Shield className="h-[18px] w-[18px]" strokeWidth={2} />
                         </Link>
                       )}
-                      <Link
-                        href="/account/orders"
-                        className={cn(
-                          "relative flex h-10 w-10 items-center justify-center rounded-lg transition-colors duration-200",
-                          isTransparent
-                            ? "text-white/70 hover:bg-white/10 hover:text-white"
-                            : "text-mid-gray hover:bg-soft-stone/50 hover:text-rich-black"
+
+                      {/* Profile dropdown */}
+                      <div className="relative" ref={profileRef}>
+                        <button
+                          onClick={() => setIsProfileOpen(!isProfileOpen)}
+                          className={cn(
+                            "relative flex items-center gap-1 h-10 px-2 rounded-lg transition-colors duration-200",
+                            isTransparent
+                              ? "text-white/70 hover:bg-white/10 hover:text-white"
+                              : "text-mid-gray hover:bg-soft-stone/50 hover:text-rich-black",
+                            isProfileOpen && !isTransparent && "bg-soft-stone/50 text-rich-black",
+                            isProfileOpen && isTransparent && "bg-white/10 text-white"
+                          )}
+                          aria-label="Account menu"
+                          aria-expanded={isProfileOpen}
+                        >
+                          <User className="h-[18px] w-[18px]" strokeWidth={2} />
+                          <ChevronDown
+                            className={cn(
+                              "h-3.5 w-3.5 transition-transform duration-200",
+                              isProfileOpen && "rotate-180"
+                            )}
+                            strokeWidth={2}
+                          />
+                        </button>
+
+                        {/* Dropdown menu */}
+                        {isProfileOpen && (
+                          <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl border border-soft-stone/60 shadow-lg py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                            {/* User info */}
+                            <div className="px-4 py-2.5 border-b border-soft-stone/30">
+                              <p className="text-sm font-medium text-rich-black truncate">
+                                {user.user_metadata?.full_name || user.email?.split("@")[0] || "User"}
+                              </p>
+                              <p className="text-xs text-mid-gray truncate">
+                                {user.email}
+                              </p>
+                            </div>
+
+                            {/* Menu items */}
+                            <div className="py-1">
+                              <Link
+                                href="/account/orders"
+                                className="flex items-center gap-3 px-4 py-2.5 text-sm text-rich-black hover:bg-soft-stone/30 transition-colors"
+                                onClick={() => setIsProfileOpen(false)}
+                              >
+                                <Package className="h-4 w-4 text-mid-gray" />
+                                My Orders
+                              </Link>
+                              <Link
+                                href="/account/addresses"
+                                className="flex items-center gap-3 px-4 py-2.5 text-sm text-rich-black hover:bg-soft-stone/30 transition-colors"
+                                onClick={() => setIsProfileOpen(false)}
+                              >
+                                <MapPin className="h-4 w-4 text-mid-gray" />
+                                Saved Addresses
+                              </Link>
+                              <Link
+                                href="/account/settings"
+                                className="flex items-center gap-3 px-4 py-2.5 text-sm text-rich-black hover:bg-soft-stone/30 transition-colors"
+                                onClick={() => setIsProfileOpen(false)}
+                              >
+                                <Settings className="h-4 w-4 text-mid-gray" />
+                                Settings
+                              </Link>
+                            </div>
+
+                            {/* Divider */}
+                            <div className="h-px bg-soft-stone/30 my-1" />
+
+                            {/* Info links */}
+                            <div className="py-1">
+                              <Link
+                                href="/pages/faq"
+                                className="flex items-center gap-3 px-4 py-2.5 text-sm text-mid-gray hover:bg-soft-stone/30 hover:text-rich-black transition-colors"
+                                onClick={() => setIsProfileOpen(false)}
+                              >
+                                <HelpCircle className="h-4 w-4" />
+                                FAQ
+                              </Link>
+                              <Link
+                                href="/pages/terms"
+                                className="flex items-center gap-3 px-4 py-2.5 text-sm text-mid-gray hover:bg-soft-stone/30 hover:text-rich-black transition-colors"
+                                onClick={() => setIsProfileOpen(false)}
+                              >
+                                <FileText className="h-4 w-4" />
+                                Terms & Conditions
+                              </Link>
+                              <Link
+                                href="/pages/privacy"
+                                className="flex items-center gap-3 px-4 py-2.5 text-sm text-mid-gray hover:bg-soft-stone/30 hover:text-rich-black transition-colors"
+                                onClick={() => setIsProfileOpen(false)}
+                              >
+                                <ShieldCheck className="h-4 w-4" />
+                                Privacy Policy
+                              </Link>
+                            </div>
+
+                            {/* Divider */}
+                            <div className="h-px bg-soft-stone/30 my-1" />
+
+                            {/* Sign out */}
+                            <div className="py-1">
+                              <button
+                                onClick={handleSignOut}
+                                className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left"
+                              >
+                                <LogOut className="h-4 w-4" />
+                                Sign Out
+                              </button>
+                            </div>
+                          </div>
                         )}
-                        aria-label="My orders"
-                        title="My Orders"
-                      >
-                        <User className="h-[18px] w-[18px]" strokeWidth={2} />
-                      </Link>
-                      <Link
-                        href="/account/settings"
-                        className={cn(
-                          "relative flex h-10 w-10 items-center justify-center rounded-lg transition-colors duration-200",
-                          isTransparent
-                            ? "text-white/70 hover:bg-white/10 hover:text-white"
-                            : "text-mid-gray hover:bg-soft-stone/50 hover:text-rich-black"
-                        )}
-                        aria-label="Account settings"
-                        title="Settings"
-                      >
-                        <Settings className="h-[18px] w-[18px]" strokeWidth={2} />
-                      </Link>
-                      <button
-                        onClick={signOut}
-                        className={cn(
-                          "relative flex h-10 w-10 items-center justify-center rounded-lg transition-colors duration-200",
-                          isTransparent
-                            ? "text-white/70 hover:bg-white/10 hover:text-white"
-                            : "text-mid-gray hover:bg-soft-stone/50 hover:text-rich-black"
-                        )}
-                        aria-label="Sign out"
-                        title="Sign out"
-                      >
-                        <LogOut className="h-[18px] w-[18px]" strokeWidth={2} />
-                      </button>
+                      </div>
                     </>
                   ) : (
                     <Link
