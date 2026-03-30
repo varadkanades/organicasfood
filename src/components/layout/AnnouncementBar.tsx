@@ -22,7 +22,7 @@ export default function AnnouncementBar() {
       {i > 0 && (
         <span className="w-1 h-1 rounded-full bg-white/40 shrink-0" />
       )}
-      <span>{b.message}</span>
+      <span style={{ whiteSpace: "pre" }}>{b.message}</span>
     </span>
   ));
 
