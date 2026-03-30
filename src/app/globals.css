@@ -55,6 +55,11 @@
   100% { opacity: 1; transform: scale(1); }
 }
 
+@keyframes scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
 /* Base styles */
 @layer base {
   html {
