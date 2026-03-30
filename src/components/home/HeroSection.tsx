@@ -6,6 +6,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import Button from "@/components/ui/Button";
 import Container from "@/components/ui/Container";
+import AnnouncementBar from "@/components/layout/AnnouncementBar";
 
 // ── Hero slide data ───────────────────────────────────────────────────────────
 // Each slide maps to one of Organika's products.
@@ -307,6 +308,11 @@ export function HeroSection() {
 
       {/* ── Floating particles ── */}
       <FloatingParticles />
+
+      {/* ── Rolling announcement banner ── */}
+      <div className="absolute top-16 sm:top-18 left-0 right-0 z-20">
+        <AnnouncementBar />
+      </div>
 
       {/* ── Content ── */}
       <Container className="relative z-10 h-full flex flex-col justify-center">
