@@ -16,31 +16,48 @@ export default function AnnouncementBar() {
 
   if (!isLoaded || banners.length === 0) return null;
 
-  // Join all banner messages with spacing — admin controls the text
-  const marqueeText = banners.map((b) => b.message).join("          ");
+  // Build the content block: all banner messages with bullet separators
+  const messageBlock = banners.map((b, i) => (
+    <span key={b.id} className="inline-flex items-center gap-4">
+      {i > 0 && (
+        <span className="w-1 h-1 rounded-full bg-white/40 shrink-0" />
+      )}
+      <span>{b.message}</span>
+    </span>
+  ));
+
+  // Duration scales with number of banners (more content = slower scroll)
+  const duration = Math.max(banners.length * 12, 20);
 
   return (
     <div className="w-full overflow-hidden bg-white/10 backdrop-blur-sm border-y border-white/10">
       <div className="relative h-9 flex items-center overflow-hidden">
-        {/* Two identical spans side by side for seamless infinite loop */}
+        {/*
+          Track: holds 2 identical copies of the content.
+          Animates from translateX(-100%) → translateX(0) for left-to-right motion.
+          When copy 1 exits right, copy 2 seamlessly enters from left.
+        */}
         <div
-          className="flex shrink-0"
+          className="marquee-track flex shrink-0"
           style={{
-            animation: `scroll ${Math.max(banners.length * 15, 25)}s linear infinite`,
+            animation: `marquee-ltr ${duration}s linear infinite`,
+            width: "max-content",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.animationPlayState = "paused";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.animationPlayState = "running";
           }}
         >
-          <span className="shrink-0 whitespace-nowrap text-xs sm:text-sm font-medium text-white/80 tracking-wide px-8">
-            {marqueeText}
-          </span>
-          <span className="shrink-0 whitespace-nowrap text-xs sm:text-sm font-medium text-white/80 tracking-wide px-8">
-            {marqueeText}
-          </span>
-          <span className="shrink-0 whitespace-nowrap text-xs sm:text-sm font-medium text-white/80 tracking-wide px-8">
-            {marqueeText}
-          </span>
-          <span className="shrink-0 whitespace-nowrap text-xs sm:text-sm font-medium text-white/80 tracking-wide px-8">
-            {marqueeText}
-          </span>
+          {/* Copy 1 */}
+          <div className="shrink-0 whitespace-nowrap text-xs sm:text-sm font-medium text-white/80 tracking-wide px-8 inline-flex items-center gap-4">
+            {messageBlock}
+          </div>
+          {/* Copy 2 (identical duplicate for seamless loop) */}
+          <div className="shrink-0 whitespace-nowrap text-xs sm:text-sm font-medium text-white/80 tracking-wide px-8 inline-flex items-center gap-4">
+            {messageBlock}
+          </div>
         </div>
       </div>
     </div>
