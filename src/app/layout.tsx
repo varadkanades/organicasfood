@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/layout/Header";
+import AnnouncementBar from "@/components/layout/AnnouncementBar";
 import Footer from "@/components/layout/Footer";
 import WhatsAppFloat from "@/components/shared/WhatsAppFloat";
 import { CartProvider } from "@/context/CartContext";
@@ -38,6 +39,7 @@ export default function RootLayout({
       <body className="font-body bg-warm-cream text-rich-black antialiased">
         <AuthProvider>
           <CartProvider>
+            <AnnouncementBar />
             <Header />
             <main className="min-h-screen">{children}</main>
             <Footer />

@@ -22,8 +22,7 @@ import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
-import { formatPrice, getWhatsAppUrl } from "@/lib/utils";
-import { WHATSAPP_NUMBER } from "@/lib/constants";
+import { formatPrice } from "@/lib/utils";
 import { createOrder, type DeliveryDetails } from "@/lib/supabase-orders";
 import {
   validateCoupon,
@@ -195,8 +194,11 @@ export default function CheckoutPage() {
     setIsPlacingOrder(true);
     setError(null);
 
+    let orderSucceeded = false;
+
     try {
-      const order = await createOrder({
+      // Create order with 30s timeout protection
+      const orderPromise = createOrder({
         items: items.map((item) => ({
           productId: item.productId,
           name: item.name,
@@ -224,12 +226,18 @@ export default function CheckoutPage() {
         notes: notes.trim() || undefined,
       });
 
-      // Record coupon usage if a coupon was applied
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Order is taking too long. Please check your connection and try again.")), 30000)
+      );
+
+      const order = await Promise.race([orderPromise, timeoutPromise]);
+
+      // Record coupon usage (fire-and-forget — don't block checkout)
       if (appliedCoupon && user?.id) {
-        await recordCouponUsage(appliedCoupon.coupon.id, user.id, order.id);
+        recordCouponUsage(appliedCoupon.coupon.id, user.id, order.id).catch(() => {});
       }
 
-      // Send order notification emails (fire-and-forget — don't block checkout)
+      // Send order notification emails (fire-and-forget)
       fetch("/api/send-order-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -258,19 +266,19 @@ export default function CheckoutPage() {
         }),
       }).catch(() => {}); // Silently ignore email errors
 
-      // Send WhatsApp notification to admin with order details
-      const itemsList = items.map((i) => `${i.name} (${i.size}) x${i.quantity}`).join(", ");
-      const whatsAppMsg = `🛒 New Order: ${order.order_number}\n👤 ${form.fullName.trim()}\n📱 ${form.phone.trim()}\n📍 ${form.city.trim()}, ${form.state.trim()}\n📦 ${itemsList}\n💰 Total: ₹${total}\n💳 COD`;
-      window.open(getWhatsAppUrl(WHATSAPP_NUMBER, whatsAppMsg), "_blank");
-
-      clearCart();
+      // Mark success and navigate — order confirmation page has WhatsApp button
+      orderSucceeded = true;
       router.push(`/order-confirmation?order=${order.order_number}`);
+      clearCart();
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to place order. Please try again.";
       setError(message);
     } finally {
-      setIsPlacingOrder(false);
+      // Only reset loading state if order failed — prevents "empty cart" flash on success
+      if (!orderSucceeded) {
+        setIsPlacingOrder(false);
+      }
     }
   }
 
@@ -693,7 +701,7 @@ export default function CheckoutPage() {
                   <path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.5.5 0 00.611.611l4.458-1.495A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.315 0-4.458-.766-6.183-2.059l-.432-.324-2.645.887.887-2.645-.324-.432A9.935 9.935 0 012 12C2 6.486 6.486 2 12 2s10 4.486 10 10-4.486 10-10 10z" />
                 </svg>
                 <p className="text-xs text-[#1a3a2a]/70 leading-relaxed">
-                  After placing your order, you&apos;ll be redirected to <strong className="text-[#25D366]">WhatsApp</strong> to confirm with us. Please send the message to complete your order.
+                  After placing your order, you can confirm on <strong className="text-[#25D366]">WhatsApp</strong> from the confirmation page to speed up processing.
                 </p>
               </div>
 

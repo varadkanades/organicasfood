@@ -20,6 +20,7 @@ import {
   ClipboardList,
   FileText,
   Upload,
+  Megaphone,
 } from "lucide-react";
 import Container from "@/components/ui/Container";
 import { cn } from "@/lib/utils";
@@ -36,6 +37,7 @@ import {
 import CouponManager from "@/components/admin/CouponManager";
 import OrderManager from "@/components/admin/OrderManager";
 import PageManager from "@/components/admin/PageManager";
+import BannerManager from "@/components/admin/BannerManager";
 import { supabase } from "@/lib/supabase";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -99,7 +101,7 @@ function generateSlug(name: string): string {
 
 export default function AdminDashboard() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<"products" | "coupons" | "orders" | "pages">("products");
+  const [activeTab, setActiveTab] = useState<"products" | "coupons" | "orders" | "pages" | "banners">("products");
   const [products, setProducts] = useState<SupabaseProduct[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
@@ -430,6 +432,7 @@ export default function AdminDashboard() {
             { key: "orders" as const, label: "Orders", icon: ClipboardList },
             { key: "coupons" as const, label: "Coupons", icon: Tag },
             { key: "pages" as const, label: "Pages", icon: FileText },
+            { key: "banners" as const, label: "Banners", icon: Megaphone },
           ]).map(({ key, label, icon: Icon }) => (
             <button
               key={key}
@@ -1280,6 +1283,13 @@ export default function AdminDashboard() {
         {activeTab === "pages" && (
           <div className="mt-8">
             <PageManager />
+          </div>
+        )}
+
+        {/* ── BANNERS TAB ── */}
+        {activeTab === "banners" && (
+          <div className="mt-8">
+            <BannerManager />
           </div>
         )}
       </Container>
