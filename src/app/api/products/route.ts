@@ -1,8 +1,12 @@
-// GET /api/products — Return all products
-// TODO: Phase 5 — Connect to Payload CMS / PostgreSQL
+// GET /api/products — Return all products from Supabase
 import { NextResponse } from "next/server";
-import { PRODUCTS } from "@/data/products";
+import { fetchProducts } from "@/lib/supabase-products";
 
 export async function GET() {
-  return NextResponse.json({ products: PRODUCTS });
+  try {
+    const products = await fetchProducts();
+    return NextResponse.json({ products });
+  } catch {
+    return NextResponse.json({ products: [] });
+  }
 }

@@ -81,11 +81,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
+      if (event === "SIGNED_OUT") {
+        setState({ user: null, role: null, isLoading: false });
+      } else if (session?.user) {
         const role = await fetchRole(session.user.id);
         setState({ user: session.user, role, isLoading: false });
-      } else {
-        setState({ user: null, role: null, isLoading: false });
       }
     });
 

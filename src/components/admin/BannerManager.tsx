@@ -51,6 +51,7 @@ export default function BannerManager() {
   const [isSaving, setIsSaving] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -174,6 +175,8 @@ export default function BannerManager() {
   // ── Toggle active ─────────────────────────────────────────────────────────
 
   const handleToggle = async (banner: Banner) => {
+    if (togglingId) return;
+    setTogglingId(banner.id);
     try {
       await toggleBannerActive(banner.id, !banner.is_active);
       loadBanners();
@@ -181,6 +184,8 @@ export default function BannerManager() {
       const message =
         err instanceof Error ? err.message : "Failed to toggle banner";
       setError(message);
+    } finally {
+      setTogglingId(null);
     }
   };
 
@@ -394,7 +399,8 @@ export default function BannerManager() {
               {/* Active toggle */}
               <button
                 onClick={() => handleToggle(banner)}
-                className={`shrink-0 ${
+                disabled={togglingId === banner.id}
+                className={`shrink-0 disabled:opacity-50 ${
                   banner.is_active ? "text-fresh-green" : "text-mid-gray/40"
                 }`}
                 title={banner.is_active ? "Deactivate" : "Activate"}

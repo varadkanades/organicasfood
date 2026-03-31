@@ -1,9 +1,9 @@
 import type { MetadataRoute } from "next";
-import { PRODUCTS } from "@/data/products";
+import { supabase } from "@/lib/supabase";
 
 const SITE_URL = "https://organikasfoods.com";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = [
     { url: SITE_URL, lastModified: new Date(), changeFrequency: "weekly", priority: 1 },
     { url: `${SITE_URL}/shop`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.9 },
@@ -11,7 +11,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/contact`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.7 },
   ];
 
-  const productPages: MetadataRoute.Sitemap = PRODUCTS.map((product) => ({
+  const { data: products } = await supabase
+    .from("products")
+    .select("slug");
+
+  const productPages: MetadataRoute.Sitemap = (products ?? []).map((product) => ({
     url: `${SITE_URL}/shop/${product.slug}`,
     lastModified: new Date(),
     changeFrequency: "weekly" as const,

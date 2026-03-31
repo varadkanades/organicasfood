@@ -3,26 +3,34 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Check, ShoppingBag } from "lucide-react";
+import { Check, ShoppingBag, Loader2 } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
 import { PageHeader } from "@/components/shared/PageHeader";
 import {
-  PRODUCTS,
-  getProductsByCategory,
-  getDisplayPrice,
-  type Product,
-} from "@/data/products";
+  fetchProducts,
+  type SupabaseProduct,
+  getDiscountedPrice,
+} from "@/lib/supabase-products";
 import { PRODUCT_CATEGORIES, SORT_OPTIONS } from "@/lib/constants";
 import { formatPrice } from "@/lib/utils";
 import { useCart } from "@/context/CartContext";
+
+function getDisplayPrice(product: SupabaseProduct) {
+  const sizeIndex = product.sizes.length > 1 ? 1 : 0;
+  const size = product.sizes[sizeIndex];
+  const dp = product.discount_percent ?? 0;
+  const originalPrice = size.price;
+  const price = dp > 0 ? getDiscountedPrice(originalPrice, dp) : originalPrice;
+  return { price, originalPrice, unit: size.weight, discountPercent: dp };
+}
 
 // ── Product card for shop grid ───────────────────────────────────────────────
 function ShopProductCard({
   product,
   index,
 }: {
-  product: Product;
+  product: SupabaseProduct;
   index: number;
 }) {
   const [visible, setVisible] = useState(false);
@@ -56,7 +64,7 @@ function ShopProductCard({
       productId: product.slug,
       name: product.name,
       slug: product.slug,
-      image: product.imageSrc,
+      image: product.image_src,
       size: unit,
       price,
       quantity: 1,
@@ -72,15 +80,15 @@ function ShopProductCard({
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
       }`}
     >
-      <div className="bg-white rounded-3xl overflow-hidden border border-warm-stone/15 shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5">
-        <Link href={`/shop/${product.slug}`} className="group block">
+      <div className="bg-white rounded-3xl overflow-hidden border border-warm-stone/15 shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 h-full flex flex-col">
+        <Link href={`/shop/${product.slug}`} className="group block flex-1 flex flex-col">
           {/* Image */}
           <div className={`relative aspect-square overflow-hidden ${product.color}`}>
             {/* Badge */}
             {product.badge && (
               <div
                 className="absolute top-4 left-4 z-10 px-3 py-1 rounded-full text-white text-xs font-semibold tracking-wide"
-                style={{ backgroundColor: product.accentColor }}
+                style={{ backgroundColor: product.accent_color }}
               >
                 {product.badge}
               </div>
@@ -94,7 +102,7 @@ function ShopProductCard({
 
             {!imgError ? (
               <Image
-                src={product.imageSrc}
+                src={product.image_src}
                 alt={product.name}
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -113,19 +121,19 @@ function ShopProductCard({
           </div>
 
           {/* Content */}
-          <div className="p-6">
+          <div className="p-6 flex-1 flex flex-col">
             <p className="text-xs font-medium uppercase tracking-widest text-mid-gray mb-1">
-              {product.tagline}
+              {product.tagline || "\u00A0"}
             </p>
             <h3 className="font-heading text-xl text-rich-black mb-2 group-hover:text-deep-forest transition-colors duration-200">
               {product.name}
             </h3>
             <p className="text-sm text-mid-gray leading-relaxed mb-4 line-clamp-2">
-              {product.description}
+              {product.description || "\u00A0"}
             </p>
 
             {/* Price + sizes */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mt-auto">
               <div>
                 <span className="text-xl font-bold text-deep-forest">
                   {formatPrice(price)}
@@ -172,13 +180,23 @@ function ShopProductCard({
 
 // ── Main Shop Page ───────────────────────────────────────────────────────────
 export default function ShopPage() {
+  const [products, setProducts] = useState<SupabaseProduct[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("newest");
 
+  useEffect(() => {
+    fetchProducts()
+      .then(setProducts)
+      .catch(() => {})
+      .finally(() => setIsLoading(false));
+  }, []);
+
   // Filter products
-  const filtered = getProductsByCategory(
-    activeCategory as "all" | "vegetable" | "leaf"
-  );
+  const filtered =
+    activeCategory === "all"
+      ? products
+      : products.filter((p) => p.category === activeCategory);
 
   // Sort products
   const sorted = [...filtered].sort((a, b) => {
@@ -246,14 +264,20 @@ export default function ShopPage() {
           </p>
 
           {/* Product grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            {sorted.map((product, i) => (
-              <ShopProductCard key={product.slug} product={product} index={i} />
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="flex justify-center py-20">
+              <Loader2 className="h-8 w-8 animate-spin text-mid-gray" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+              {sorted.map((product, i) => (
+                <ShopProductCard key={product.slug} product={product} index={i} />
+              ))}
+            </div>
+          )}
 
           {/* Empty state */}
-          {sorted.length === 0 && (
+          {!isLoading && sorted.length === 0 && (
             <div className="text-center py-20">
               <p className="text-6xl mb-4">🌿</p>
               <p className="text-mid-gray">

@@ -56,6 +56,7 @@ export default function CouponManager() {
   const [isSaving, setIsSaving] = useState(false);
   const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -196,6 +197,8 @@ export default function CouponManager() {
   // ── Toggle active ─────────────────────────────────────────────────────────
 
   const toggleActive = async (coupon: Coupon) => {
+    if (togglingId) return;
+    setTogglingId(coupon.id);
     try {
       await updateCoupon(coupon.id, { is_active: !coupon.is_active });
       await loadCoupons();
@@ -203,6 +206,8 @@ export default function CouponManager() {
       const message =
         err instanceof Error ? err.message : "Failed to update coupon";
       setError(message);
+    } finally {
+      setTogglingId(null);
     }
   };
 
@@ -316,7 +321,8 @@ export default function CouponManager() {
                       {/* Toggle active */}
                       <button
                         onClick={() => toggleActive(coupon)}
-                        className="p-2 rounded-lg hover:bg-soft-stone/50 transition-colors"
+                        disabled={togglingId === coupon.id}
+                        className="p-2 rounded-lg hover:bg-soft-stone/50 transition-colors disabled:opacity-50"
                         title={
                           coupon.is_active
                             ? "Deactivate coupon"

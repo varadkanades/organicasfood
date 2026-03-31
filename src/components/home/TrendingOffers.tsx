@@ -5,20 +5,17 @@ import Link from "next/link";
 import Image from "next/image";
 import { TrendingUp, Flame } from "lucide-react";
 import Container from "@/components/ui/Container";
-import { PRODUCTS, applyDiscount, type Product } from "@/data/products";
-
-// Get trending products — those with discounts or badges
-function getTrendingProducts(): Product[] {
-  return PRODUCTS.filter(
-    (p) => (p.discountPercent && p.discountPercent > 0) || p.badge
-  );
-}
+import {
+  fetchProducts,
+  getDiscountedPrice,
+  type SupabaseProduct,
+} from "@/lib/supabase-products";
 
 function TrendingCard({
   product,
   index,
 }: {
-  product: Product;
+  product: SupabaseProduct;
   index: number;
 }) {
   const [visible, setVisible] = useState(false);
@@ -41,9 +38,9 @@ function TrendingCard({
   }, [index]);
 
   const mainSize = product.sizes[1] || product.sizes[0];
-  const hasDiscount = product.discountPercent && product.discountPercent > 0;
+  const hasDiscount = product.discount_percent > 0;
   const discountedPrice = hasDiscount
-    ? applyDiscount(mainSize.price, product.discountPercent!)
+    ? getDiscountedPrice(mainSize.price, product.discount_percent)
     : mainSize.price;
 
   return (
@@ -59,7 +56,7 @@ function TrendingCard({
           {hasDiscount && (
             <div className="absolute top-3 left-3 z-10 flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-500 text-white text-xs font-bold shadow-lg">
               <Flame className="h-3 w-3" />
-              {product.discountPercent}% OFF
+              {product.discount_percent}% OFF
             </div>
           )}
 
@@ -73,7 +70,7 @@ function TrendingCard({
           {/* Image */}
           <div className="relative aspect-square bg-white/5 overflow-hidden">
             <Image
-              src={product.imageSrc}
+              src={product.image_src}
               alt={product.name}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -108,9 +105,19 @@ function TrendingCard({
 }
 
 export function TrendingOffers() {
-  const trending = getTrendingProducts();
+  const [trending, setTrending] = useState<SupabaseProduct[]>([]);
   const [headingVisible, setHeadingVisible] = useState(false);
   const headingRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fetchProducts()
+      .then((products) => {
+        setTrending(
+          products.filter((p) => p.discount_percent > 0 || p.badge)
+        );
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const el = headingRef.current;

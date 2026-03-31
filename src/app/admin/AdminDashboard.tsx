@@ -230,22 +230,36 @@ export default function AdminDashboard() {
       let imageSrc = formData.image_src.trim();
       if (imageFile) {
         setIsUploadingImage(true);
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.access_token) throw new Error("Not authenticated");
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session?.access_token) throw new Error("Not authenticated");
 
-        const uploadForm = new window.FormData();
-        uploadForm.append("file", imageFile);
-        uploadForm.append("slug", formData.slug.trim());
+          const uploadForm = new window.FormData();
+          uploadForm.append("file", imageFile);
+          uploadForm.append("slug", formData.slug.trim());
 
-        const res = await fetch("/api/upload/product-image", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${session.access_token}` },
-          body: uploadForm,
-        });
-        const result = await res.json();
-        if (!res.ok) throw new Error(result.error || "Image upload failed");
-        imageSrc = result.url;
-        setIsUploadingImage(false);
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+          const res = await fetch("/api/upload/product-image", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${session.access_token}` },
+            body: uploadForm,
+            signal: controller.signal,
+          });
+          clearTimeout(timeoutId);
+
+          const result = await res.json();
+          if (!res.ok) throw new Error(result.error || "Image upload failed");
+          imageSrc = result.url;
+        } catch (err) {
+          if (err instanceof DOMException && err.name === "AbortError") {
+            throw new Error("Image upload timed out. Try a smaller image or check your connection.");
+          }
+          throw err;
+        } finally {
+          setIsUploadingImage(false);
+        }
       }
 
       const productInput: ProductInput = {
@@ -270,14 +284,17 @@ export default function AdminDashboard() {
       };
 
       if (editingProductId) {
-        await updateProduct(editingProductId, productInput);
+        const updated = await updateProduct(editingProductId, productInput);
+        setProducts((prev) =>
+          prev.map((p) => (p.id === editingProductId ? updated : p))
+        );
         setSuccess(`"${productInput.name}" updated successfully.`);
       } else {
-        await createProduct(productInput);
+        const created = await createProduct(productInput);
+        setProducts((prev) => [...prev, created]);
         setSuccess(`"${productInput.name}" created successfully.`);
       }
 
-      await loadProducts();
       cancelForm();
     } catch (err: unknown) {
       const message =

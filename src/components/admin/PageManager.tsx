@@ -99,12 +99,20 @@ export default function PageManager() {
     }
 
     setIsSaving(true);
+    setError(null);
     try {
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Save timed out. Please try again.")), 15000)
+      );
+
       if (viewMode === "edit" && editingPage) {
-        await updatePage(editingPage.id, {
-          title: title.trim(),
-          content,
-        });
+        await Promise.race([
+          updatePage(editingPage.id, {
+            title: title.trim(),
+            content,
+          }),
+          timeout,
+        ]);
         setSuccess("Page updated successfully");
       } else if (viewMode === "create") {
         if (!slug.trim()) {
@@ -112,15 +120,18 @@ export default function PageManager() {
           setIsSaving(false);
           return;
         }
-        await createPage({
-          slug: slug
-            .trim()
-            .toLowerCase()
-            .replace(/[^a-z0-9-]/g, "-")
-            .replace(/-+/g, "-"),
-          title: title.trim(),
-          content,
-        });
+        await Promise.race([
+          createPage({
+            slug: slug
+              .trim()
+              .toLowerCase()
+              .replace(/[^a-z0-9-]/g, "-")
+              .replace(/-+/g, "-"),
+            title: title.trim(),
+            content,
+          }),
+          timeout,
+        ]);
         setSuccess("Page created successfully");
       }
       await loadPages();

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Check, ShoppingBag } from "lucide-react";
@@ -9,13 +9,12 @@ import { useCart } from "@/context/CartContext";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
 import {
-  getProductBySlug,
-  getProductsByCategory,
-  PRODUCTS,
-  applyDiscount,
-  type Product,
-  type ProductSize,
-} from "@/data/products";
+  fetchProductBySlug,
+  fetchProducts,
+  getDiscountedPrice,
+  type SupabaseProduct,
+  type SupabaseProductSize,
+} from "@/lib/supabase-products";
 import {
   formatPrice,
   getWhatsAppUrl,
@@ -31,7 +30,7 @@ function SizeSelector({
   accentColor,
   discountPercent = 0,
 }: {
-  sizes: ProductSize[];
+  sizes: SupabaseProductSize[];
   selected: number;
   onSelect: (i: number) => void;
   accentColor: string;
@@ -40,7 +39,7 @@ function SizeSelector({
   return (
     <div className="flex gap-3">
       {sizes.map((size, i) => {
-        const discounted = applyDiscount(size.price, discountPercent);
+        const discounted = getDiscountedPrice(size.price, discountPercent);
         return (
         <button
           key={size.weight}
@@ -81,7 +80,7 @@ function SizeSelector({
 }
 
 // ── Info tabs (Benefits / How to Use / Ingredients) ──────────────────────────
-function ProductTabs({ product }: { product: Product }) {
+function ProductTabs({ product }: { product: SupabaseProduct }) {
   const [activeTab, setActiveTab] = useState<
     "benefits" | "usage" | "ingredients"
   >("benefits");
@@ -156,7 +155,7 @@ function ProductTabs({ product }: { product: Product }) {
                 Shelf Life
               </p>
               <p className="text-[15px] text-rich-black">
-                {product.shelfLife}
+                {product.shelf_life}
               </p>
             </div>
             <div>
@@ -176,7 +175,7 @@ function ProductTabs({ product }: { product: Product }) {
 }
 
 // ── Related product card ─────────────────────────────────────────────────────
-function RelatedCard({ product }: { product: Product }) {
+function RelatedCard({ product }: { product: SupabaseProduct }) {
   const [imgError, setImgError] = useState(false);
 
   return (
@@ -185,7 +184,7 @@ function RelatedCard({ product }: { product: Product }) {
         <div className={`relative aspect-square ${product.color}`}>
           {!imgError ? (
             <Image
-              src={product.imageSrc}
+              src={product.image_src}
               alt={product.name}
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -214,22 +213,41 @@ function RelatedCard({ product }: { product: Product }) {
 // ── Main Product Detail Page ─────────────────────────────────────────────────
 export default function ProductDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const slug = params.slug as string;
-  const product = getProductBySlug(slug);
   const { addItem } = useCart();
 
-  const [selectedSize, setSelectedSize] = useState(
-    // Default to the middle size
-    product ? Math.min(1, product.sizes.length - 1) : 0
-  );
+  const [product, setProduct] = useState<SupabaseProduct | null>(null);
+  const [related, setRelated] = useState<SupabaseProduct[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedSize, setSelectedSize] = useState(0);
   const [imgError, setImgError] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [added, setAdded] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    Promise.all([fetchProductBySlug(slug), fetchProducts()])
+      .then(([prod, all]) => {
+        setProduct(prod);
+        if (prod) {
+          setSelectedSize(Math.min(1, prod.sizes.length - 1));
+          setRelated(all.filter((p) => p.slug !== prod.slug).slice(0, 3));
+        }
+      })
+      .catch(() => {})
+      .finally(() => setIsLoading(false));
+  }, [slug]);
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <section className="pt-32 pb-24 bg-warm-cream min-h-screen">
+        <Container className="flex justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-mid-gray/20 border-t-deep-forest" />
+        </Container>
+      </section>
+    );
+  }
 
   // 404 if product not found
   if (!product) {
@@ -252,17 +270,12 @@ export default function ProductDetailPage() {
   }
 
   const currentSize = product.sizes[selectedSize];
-  const dp = product.discountPercent ?? 0;
-  const discountedCurrentPrice = applyDiscount(currentSize.price, dp);
+  const dp = product.discount_percent ?? 0;
+  const discountedCurrentPrice = getDiscountedPrice(currentSize.price, dp);
   const whatsappUrl = getWhatsAppUrl(
     WHATSAPP_NUMBER,
     getWhatsAppOrderMessage(product.name, currentSize.weight)
   );
-
-  // Related products (same category, exclude current)
-  const related = PRODUCTS.filter(
-    (p) => p.slug !== product.slug
-  ).slice(0, 3);
 
   return (
     <>
@@ -307,7 +320,7 @@ export default function ProductDetailPage() {
                 {product.badge && (
                   <div
                     className="absolute top-5 left-5 z-10 px-3 py-1 rounded-full text-white text-xs font-semibold tracking-wide"
-                    style={{ backgroundColor: product.accentColor }}
+                    style={{ backgroundColor: product.accent_color }}
                   >
                     {product.badge}
                   </div>
@@ -315,7 +328,7 @@ export default function ProductDetailPage() {
 
                 {!imgError ? (
                   <Image
-                    src={product.imageSrc}
+                    src={product.image_src}
                     alt={product.name}
                     fill
                     priority
@@ -354,7 +367,7 @@ export default function ProductDetailPage() {
 
               {/* Description */}
               <p className="text-mid-gray text-[15px] leading-relaxed mb-8 max-w-lg">
-                {product.longDescription}
+                {product.long_description}
               </p>
 
               {/* Size selector */}
@@ -366,7 +379,7 @@ export default function ProductDetailPage() {
                   sizes={product.sizes}
                   selected={selectedSize}
                   onSelect={setSelectedSize}
-                  accentColor={product.accentColor}
+                  accentColor={product.accent_color}
                   discountPercent={dp}
                 />
               </div>
@@ -425,7 +438,7 @@ export default function ProductDetailPage() {
                       productId: product.slug,
                       name: product.name,
                       slug: product.slug,
-                      image: product.imageSrc,
+                      image: product.image_src,
                       size: currentSize.weight,
                       price: discountedCurrentPrice,
                       quantity: 1,
