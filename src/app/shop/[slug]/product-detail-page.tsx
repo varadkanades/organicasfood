@@ -8,6 +8,7 @@ import { Check, ShoppingBag } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
+import OutOfStockAlert from "@/components/ui/OutOfStockAlert";
 import {
   fetchProductBySlug,
   fetchProducts,
@@ -223,6 +224,7 @@ export default function ProductDetailPage() {
   const [imgError, setImgError] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [added, setAdded] = useState(false);
+  const [showOOS, setShowOOS] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -230,7 +232,15 @@ export default function ProductDetailPage() {
       .then(([prod, all]) => {
         setProduct(prod);
         if (prod) {
-          setSelectedSize(Math.min(1, prod.sizes.length - 1));
+          const preferred = Math.min(1, prod.sizes.length - 1);
+          const firstInStock = prod.sizes.findIndex((s) => s.inStock !== false);
+          setSelectedSize(
+            prod.sizes[preferred]?.inStock !== false
+              ? preferred
+              : firstInStock >= 0
+              ? firstInStock
+              : preferred
+          );
           setRelated(all.filter((p) => p.slug !== prod.slug).slice(0, 3));
         }
       })
@@ -378,7 +388,10 @@ export default function ProductDetailPage() {
                 <SizeSelector
                   sizes={product.sizes}
                   selected={selectedSize}
-                  onSelect={setSelectedSize}
+                  onSelect={(i) => {
+                    setSelectedSize(i);
+                    setShowOOS(!product.sizes[i].inStock);
+                  }}
                   accentColor={product.accent_color}
                   discountPercent={dp}
                 />
@@ -431,9 +444,19 @@ export default function ProductDetailPage() {
                 <Button
                   variant="outline"
                   size="lg"
-                  className={`flex-1 gap-2 ${added ? "bg-fresh-green text-white border-fresh-green hover:bg-fresh-green hover:text-white" : ""}`}
-                  disabled={!currentSize.inStock}
+                  aria-disabled={!currentSize.inStock}
+                  className={`flex-1 gap-2 ${
+                    !currentSize.inStock
+                      ? "bg-warm-stone/40 text-mid-gray border-warm-stone/40 hover:bg-warm-stone/40 cursor-not-allowed"
+                      : added
+                      ? "bg-fresh-green text-white border-fresh-green hover:bg-fresh-green hover:text-white"
+                      : ""
+                  }`}
                   onClick={() => {
+                    if (!currentSize.inStock) {
+                      setShowOOS(true);
+                      return;
+                    }
                     addItem({
                       productId: product.slug,
                       name: product.name,
@@ -460,6 +483,16 @@ export default function ProductDetailPage() {
                   )}
                 </Button>
               </div>
+
+              {/* Out of stock alert */}
+              {(showOOS || !currentSize.inStock) && (
+                <div className="mb-8 -mt-6">
+                  <OutOfStockAlert
+                    productName={product.name}
+                    size={currentSize.weight}
+                  />
+                </div>
+              )}
 
               {/* Trust badges */}
               <div className="flex flex-wrap gap-3 mb-10">

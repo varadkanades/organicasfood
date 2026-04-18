@@ -91,6 +91,13 @@ export default function LoginPage() {
     }
   }, [searchParams]);
 
+  // Safe relative redirect: starts with "/" but not "//" (no protocol-relative URLs)
+  const rawRedirect = searchParams.get("redirect");
+  const safeRedirect =
+    rawRedirect && rawRedirect.startsWith("/") && !rawRedirect.startsWith("//")
+      ? rawRedirect
+      : null;
+
   // Form fields
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -160,7 +167,7 @@ export default function LoginPage() {
         if (profile?.role === "admin") {
           router.push("/admin");
         } else {
-          router.push("/");
+          router.push(safeRedirect || "/");
         }
       } else {
         const { data, error } = await supabase.auth.signUp({
@@ -179,7 +186,7 @@ export default function LoginPage() {
         if (data.user && !data.session) {
           setSuccessMessage("Check your email for a confirmation link to complete signup. Don't forget to check your spam folder.");
         } else {
-          router.push("/");
+          router.push(safeRedirect || "/");
         }
       }
     } catch (err: unknown) {
@@ -196,10 +203,12 @@ export default function LoginPage() {
     setIsGoogleLoading(true);
     setErrors({});
     try {
+      const callbackUrl = new URL(`${window.location.origin}/auth/callback`);
+      if (safeRedirect) callbackUrl.searchParams.set("redirect", safeRedirect);
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: callbackUrl.toString(),
         },
       });
       if (error) throw error;

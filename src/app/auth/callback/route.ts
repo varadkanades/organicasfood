@@ -21,6 +21,13 @@ export async function GET(request: Request) {
         return NextResponse.redirect(`${origin}${next}`);
       }
 
+      // Safe redirect (e.g. /checkout) — must be relative path, not protocol-relative
+      const rawRedirect = searchParams.get("redirect");
+      const safeRedirect =
+        rawRedirect && rawRedirect.startsWith("/") && !rawRedirect.startsWith("//")
+          ? rawRedirect
+          : null;
+
       // Get user to check role
       const { data: { user } } = await supabase.auth.getUser();
 
@@ -37,7 +44,7 @@ export async function GET(request: Request) {
         }
       }
 
-      return NextResponse.redirect(`${origin}/`);
+      return NextResponse.redirect(`${origin}${safeRedirect || "/"}`);
     }
   }
 

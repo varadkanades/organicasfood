@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Check, ShoppingBag, Loader2 } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
+import OutOfStockAlert from "@/components/ui/OutOfStockAlert";
 import { PageHeader } from "@/components/shared/PageHeader";
 import {
   fetchProducts,
@@ -22,7 +23,13 @@ function getDisplayPrice(product: SupabaseProduct) {
   const dp = product.discount_percent ?? 0;
   const originalPrice = size.price;
   const price = dp > 0 ? getDiscountedPrice(originalPrice, dp) : originalPrice;
-  return { price, originalPrice, unit: size.weight, discountPercent: dp };
+  return {
+    price,
+    originalPrice,
+    unit: size.weight,
+    discountPercent: dp,
+    inStock: size.inStock !== false,
+  };
 }
 
 // ── Product card for shop grid ───────────────────────────────────────────────
@@ -36,6 +43,7 @@ function ShopProductCard({
   const [visible, setVisible] = useState(false);
   const [imgError, setImgError] = useState(false);
   const [added, setAdded] = useState(false);
+  const [showOOS, setShowOOS] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const { addItem } = useCart();
 
@@ -55,11 +63,17 @@ function ShopProductCard({
     return () => observer.disconnect();
   }, [index]);
 
-  const { price, originalPrice, unit, discountPercent } = getDisplayPrice(product);
+  const { price, originalPrice, unit, discountPercent, inStock } =
+    getDisplayPrice(product);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!inStock) {
+      setShowOOS(true);
+      setTimeout(() => setShowOOS(false), 8000);
+      return;
+    }
     addItem({
       productId: product.slug,
       name: product.name,
@@ -94,9 +108,15 @@ function ShopProductCard({
               </div>
             )}
             {/* Discount badge */}
-            {discountPercent > 0 && (
+            {discountPercent > 0 && inStock && (
               <div className="absolute top-4 right-4 z-10 px-2.5 py-1 rounded-full bg-red-500 text-white text-xs font-bold">
                 {discountPercent}% OFF
+              </div>
+            )}
+            {/* Out of stock badge */}
+            {!inStock && (
+              <div className="absolute top-4 right-4 z-10 px-2.5 py-1 rounded-full bg-mid-gray/90 text-white text-xs font-bold">
+                Out of Stock
               </div>
             )}
 
@@ -153,14 +173,23 @@ function ShopProductCard({
         </Link>
 
         {/* Add to Cart button — outside the Link */}
-        <div className="px-6 pb-6 pt-0">
+        <div className="px-6 pb-6 pt-0 space-y-3">
           <Button
             size="sm"
             fullWidth
-            className={`gap-1.5 ${added ? "bg-fresh-green/90 hover:bg-fresh-green/90" : ""}`}
+            aria-disabled={!inStock}
+            className={`gap-1.5 ${
+              !inStock
+                ? "bg-warm-stone/40 text-mid-gray hover:bg-warm-stone/40 cursor-not-allowed"
+                : added
+                ? "bg-fresh-green/90 hover:bg-fresh-green/90"
+                : ""
+            }`}
             onClick={handleAddToCart}
           >
-            {added ? (
+            {!inStock ? (
+              "Out of Stock"
+            ) : added ? (
               <>
                 <Check className="w-4 h-4" />
                 Added to Cart
@@ -172,6 +201,9 @@ function ShopProductCard({
               </>
             )}
           </Button>
+          {showOOS && (
+            <OutOfStockAlert productName={product.name} size={unit} />
+          )}
         </div>
       </div>
     </div>

@@ -246,6 +246,10 @@ export default function CheckoutPage() {
   // ── Place Order ─────────────────────────────────────────────────────────────
 
   async function handlePlaceOrder() {
+    if (!user) {
+      router.push(`/login?redirect=${encodeURIComponent("/checkout")}`);
+      return;
+    }
     if (!validate()) return;
     if (items.length === 0) {
       setError("Your cart is empty.");
@@ -812,6 +816,23 @@ export default function CheckoutPage() {
                 </p>
               </div>
 
+              {/* Sign-in required notice */}
+              {!user && (
+                <div className="flex items-start gap-2.5 p-3 rounded-lg bg-amber-50 border border-amber-200 mb-4">
+                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <p className="text-xs text-amber-900 leading-snug">
+                    Please{" "}
+                    <Link
+                      href={`/login?redirect=${encodeURIComponent("/checkout")}`}
+                      className="font-semibold underline hover:text-amber-950"
+                    >
+                      sign in
+                    </Link>{" "}
+                    to place your order. Your cart will be saved.
+                  </p>
+                </div>
+              )}
+
               {/* Place order button */}
               <Button
                 size="lg"
@@ -825,6 +846,8 @@ export default function CheckoutPage() {
                     <Loader2 className="h-4 w-4 animate-spin" />
                     Placing Order...
                   </>
+                ) : !user ? (
+                  "Sign in to Place Order"
                 ) : (
                   `Place Order · ${formatPrice(total)}`
                 )}
