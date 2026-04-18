@@ -28,7 +28,7 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
 
   const whatsappUrl = getWhatsAppUrl(
     WHATSAPP_NUMBER,
-    "Hi! I have a question about Organika's Food products."
+    "Hi! I have a question about Organikas Foods products."
   );
 
   const handleSignOut = async () => {

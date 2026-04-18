@@ -12,13 +12,25 @@ export default function AdminLayout({
   const { user, role, isLoading } = useAuth();
   const router = useRouter();
 
+  // Force the browser to revalidate admin pages on each visit so a stale
+  // cached HTML never gets served after the role/session changes.
+  useEffect(() => {
+    const meta = document.createElement("meta");
+    meta.httpEquiv = "Cache-Control";
+    meta.content = "no-store, no-cache, must-revalidate";
+    document.head.appendChild(meta);
+    return () => {
+      document.head.removeChild(meta);
+    };
+  }, []);
+
   useEffect(() => {
     // Wait for auth to load
     if (isLoading) return;
 
-    // Not logged in → redirect to login
+    // Not logged in → redirect to login (preserve return path)
     if (!user) {
-      router.replace("/login");
+      router.replace("/login?redirect=/admin");
       return;
     }
 

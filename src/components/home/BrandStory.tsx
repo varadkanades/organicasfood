@@ -179,7 +179,7 @@ export function BrandStory() {
                 <span className="text-deep-forest italic">to Your Home</span>
               </h2>
               <p className="text-mid-gray text-[15px] leading-relaxed max-w-lg">
-                At Organika&apos;s Food, we believe the shortest distance between
+                At Organikas Foods, we believe the shortest distance between
                 a healthy body and nature is the field itself. We noticed that in
                 the journey from farm to store, most food loses its soul — its
                 nutrients, its colour, its natural vitality. So we decided to
@@ -201,7 +201,7 @@ export function BrandStory() {
               }`}
             >
               <p className="text-sm text-mid-gray leading-relaxed italic">
-                &ldquo;Today, Organika&apos;s Food is more than a brand — it&apos;s a
+                &ldquo;Today, Organikas Foods is more than a brand — it&apos;s a
                 bridge connecting the honest work of the farmer to the
                 health-conscious lifestyle of your family.&rdquo;
               </p>

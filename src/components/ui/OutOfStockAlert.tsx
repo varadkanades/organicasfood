@@ -17,7 +17,7 @@ export default function OutOfStockAlert({
 }: OutOfStockAlertProps) {
   const message = `Hi! I'd like to pre-book ${productName}${
     size ? ` (${size})` : ""
-  } from Organika's Food. Please let me know when it's back in stock.`;
+  } from Organikas Foods. Please let me know when it's back in stock.`;
   const waUrl = getWhatsAppUrl(WHATSAPP_NUMBER, message);
 
   return (

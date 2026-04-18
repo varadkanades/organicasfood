@@ -37,6 +37,6 @@ export function getWhatsAppOrderMessage(
 ): string {
   let message = `Hi! I'd like to order ${productName}`;
   if (size) message += ` (${size})`;
-  message += ` from Organika's Food. Please share details.`;
+  message += ` from Organikas Foods. Please share details.`;
   return message;
 }

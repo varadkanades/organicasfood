@@ -26,7 +26,7 @@ const CONTACT_METHODS = [
     ),
     href: getWhatsAppUrl(
       WHATSAPP_NUMBER,
-      "Hi! I have a question about Organika's Food products."
+      "Hi! I have a question about Organikas Foods products."
     ),
     accent: "bg-[#25D366]/10 text-[#25D366]",
     isExternal: true,

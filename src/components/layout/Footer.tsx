@@ -17,7 +17,7 @@ export default function Footer() {
 
   const whatsappUrl = getWhatsAppUrl(
     WHATSAPP_NUMBER,
-    "Hi! I'd like to know more about Organika's Food products."
+    "Hi! I'd like to know more about Organikas Foods products."
   );
 
   return (
@@ -30,7 +30,7 @@ export default function Footer() {
             <div className="flex items-center gap-2">
               <Image
                 src="/images/logo.png"
-                alt="Organika's Food Logo"
+                alt="Organikas Foods Logo"
                 width={36}
                 height={36}
                 className="rounded-full"

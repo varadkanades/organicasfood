@@ -262,14 +262,14 @@ export default function LoginPage() {
             <Link href="/" className="inline-flex items-center gap-3 group">
               <Image
                 src="/images/logo.png"
-                alt="Organika's Food Logo"
+                alt="Organikas Foods Logo"
                 width={56}
                 height={56}
                 className="rounded-full bg-white/10 group-hover:bg-white/15 transition-colors"
               />
               <div>
                 <span className="font-heading text-3xl text-white">
-                  Organika&apos;s Food
+                  Organikas Foods
                 </span>
                 <span className="block text-[11px] font-medium tracking-[0.25em] uppercase text-white/40">
                   100% Natural
@@ -307,7 +307,7 @@ export default function LoginPage() {
 
           {/* Bottom — Footer text */}
           <p className="text-white/25 text-xs">
-            © 2026 Organika&apos;s Food. India.
+            © 2026 Organikas Foods. India.
           </p>
         </div>
       </div>
@@ -333,13 +333,13 @@ export default function LoginPage() {
               <Link href="/" className="inline-flex items-center gap-2">
                 <Image
                   src="/images/logo.png"
-                  alt="Organika's Food Logo"
+                  alt="Organikas Foods Logo"
                   width={44}
                   height={44}
                   className="rounded-full"
                 />
                 <span className="font-heading text-2xl text-deep-forest">
-                  Organika&apos;s Food
+                  Organikas Foods
                 </span>
               </Link>
             </div>

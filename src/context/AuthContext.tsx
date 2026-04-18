@@ -89,8 +89,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
+    // 3. Re-validate session whenever the tab becomes visible again.
+    // Fixes stale-cache cases (esp. on /admin) where the role appears wrong
+    // after a long idle period, forcing the user to clear cache + re-login.
+    const onVisible = async () => {
+      if (document.visibilityState !== "visible") return;
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session?.user) {
+        const role = await fetchRole(session.user.id);
+        setState({ user: session.user, role, isLoading: false });
+      } else {
+        setState({ user: null, role: null, isLoading: false });
+      }
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
     return () => {
       subscription.unsubscribe();
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, [fetchRole]);
 

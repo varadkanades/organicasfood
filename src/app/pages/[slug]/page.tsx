@@ -15,8 +15,8 @@ export async function generateMetadata({
   const { slug } = await params;
   const title = PAGE_TITLES[slug] || "Page";
   return {
-    title: `${title} | Organika's Food`,
-    description: `${title} for Organika's Food — 100% Natural Food Powders.`,
+    title: `${title} | Organikas Foods`,
+    description: `${title} for Organikas Foods — 100% Natural Food Powders.`,
   };
 }
 

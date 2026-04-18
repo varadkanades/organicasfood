@@ -73,9 +73,11 @@ const INDIAN_STATES = [
 
 // ── Shipping cost ─────────────────────────────────────────────────────────────
 
-function getShippingCost(city: string): number {
+const FREE_SHIPPING_THRESHOLD = 400;
+
+function getShippingCost(subtotal: number, city: string): number {
   if (!city.trim()) return 0;
-  return 60; // Flat ₹60 shipping — will be updated in Batch 2
+  return subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : 60;
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -166,7 +168,7 @@ export default function CheckoutPage() {
   >({});
 
   // Computed
-  const shipping = getShippingCost(form.city);
+  const shipping = getShippingCost(totalPrice, form.city);
   const discount = appliedCoupon?.discountAmount ?? 0;
   const total = totalPrice + shipping - discount;
   const isFreeShipping = shipping === 0 && form.city.trim().length > 0;
@@ -783,10 +785,25 @@ export default function CheckoutPage() {
 
               <div className="mb-4" />
 
-              {isFreeShipping && (
+              {isFreeShipping ? (
                 <p className="text-xs text-fresh-green bg-fresh-green/5 rounded-lg px-3 py-2 mb-4">
                   Free delivery on this order!
                 </p>
+              ) : (
+                totalPrice > 0 && (
+                  <p className="text-xs text-mid-gray bg-soft-stone/40 rounded-lg px-3 py-2 mb-4">
+                    Delivery is free on orders above ₹{FREE_SHIPPING_THRESHOLD}.
+                    {totalPrice < FREE_SHIPPING_THRESHOLD && (
+                      <>
+                        {" "}Add{" "}
+                        <span className="font-semibold text-deep-forest">
+                          {formatPrice(FREE_SHIPPING_THRESHOLD - totalPrice)}
+                        </span>{" "}
+                        more to qualify.
+                      </>
+                    )}
+                  </p>
+                )
               )}
 
               <div className="h-px bg-soft-stone/40 mb-4" />
@@ -812,7 +829,9 @@ export default function CheckoutPage() {
                   <path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.5.5 0 00.611.611l4.458-1.495A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.315 0-4.458-.766-6.183-2.059l-.432-.324-2.645.887.887-2.645-.324-.432A9.935 9.935 0 012 12C2 6.486 6.486 2 12 2s10 4.486 10 10-4.486 10-10 10z" />
                 </svg>
                 <p className="text-xs text-[#1a3a2a]/70 leading-relaxed">
-                  After placing your order, you can confirm on <strong className="text-[#25D366]">WhatsApp</strong> from the confirmation page to speed up processing.
+                  Your official bill will be sent on the provided{" "}
+                  <strong className="text-[#25D366]">WhatsApp</strong> number
+                  once the order is placed.
                 </p>
               </div>
 

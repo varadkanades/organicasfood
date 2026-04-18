@@ -148,7 +148,7 @@ export default function ResetPasswordPage() {
               </span>
               <div>
                 <span className="font-heading text-2xl text-white">
-                  Organika&apos;s Food
+                  Organikas Foods
                 </span>
                 <span className="block text-[10px] font-medium tracking-[0.25em] uppercase text-white/40">
                   100% Natural
@@ -170,7 +170,7 @@ export default function ResetPasswordPage() {
 
           {/* Bottom — Footer text */}
           <p className="text-white/25 text-xs">
-            © 2026 Organika&apos;s Food. India.
+            © 2026 Organikas Foods. India.
           </p>
         </div>
       </div>
@@ -204,7 +204,7 @@ export default function ResetPasswordPage() {
                   </svg>
                 </span>
                 <span className="font-heading text-xl text-deep-forest">
-                  Organika&apos;s Food
+                  Organikas Foods
                 </span>
               </Link>
             </div>

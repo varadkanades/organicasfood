@@ -113,7 +113,7 @@ export default function Header() {
             >
               <Image
                 src="/images/logo.png"
-                alt="Organika's Food Logo"
+                alt="Organikas Foods Logo"
                 width={36}
                 height={36}
                 className="rounded-full transition-all duration-300"
@@ -214,8 +214,10 @@ export default function Header() {
                 )}
               </button>
 
-              {/* Auth — Login link or Profile dropdown */}
-              {!isLoading && (
+              {/* Auth — Login link or Profile dropdown.
+                  Always render so the auth icon never disappears on refresh
+                  (was previously hidden behind !isLoading). */}
+              {(
                 <>
                   {user ? (
                     <>

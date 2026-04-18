@@ -1,14 +1,14 @@
 // ============================================================
-// Organika's Food — Site Constants
+// Organikas Foods — Site Constants
 // Single source of truth for all site-wide data
 // ============================================================
 
-export const SITE_NAME = "Organika's Food";
+export const SITE_NAME = "Organikas Foods";
 export const SITE_TAGLINE = "100% Natural";
 export const SITE_DESCRIPTION =
   "Premium natural food powders — Beetroot, Carrot, Coriander & Curry Leaves. 100% vegan, preservative-free, FSSAI approved.";
 export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://organikasfoods.com";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://organikasfoods.in";
 
 export const WHATSAPP_NUMBER =
   process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919834845240";

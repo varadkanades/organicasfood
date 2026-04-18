@@ -150,7 +150,7 @@ export default function AboutPage() {
                     reaches you, it&apos;s a shadow of what it was.
                   </p>
                   <p>
-                    At Organika&apos;s Food, we decided to change that
+                    At Organikas Foods, we decided to change that
                     narrative. We started with a simple question: what if we
                     could capture a vegetable at its absolute freshest — and
                     deliver that freshness directly to your doorstep?
@@ -275,7 +275,7 @@ export default function AboutPage() {
                   </Button>
                 </Link>
                 <a
-                  href={getWhatsAppUrl(WHATSAPP_NUMBER, "Hi! I'd like to learn more about Organika's Food products.")}
+                  href={getWhatsAppUrl(WHATSAPP_NUMBER, "Hi! I'd like to learn more about Organikas Foods products.")}
                   target="_blank"
                   rel="noopener noreferrer"
                 >

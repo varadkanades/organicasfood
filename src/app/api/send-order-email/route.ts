@@ -107,7 +107,7 @@ function buildCustomerEmailHtml(order: OrderEmailData): string {
   <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;">
     <div style="background:#1a3a2a;padding:24px;border-radius:8px 8px 0 0;text-align:center;">
       <h1 style="color:#fff;margin:0;font-size:22px;">Thank you for your order!</h1>
-      <p style="color:#a3c4a8;margin:8px 0 0;font-size:14px;">Organika's Food — 100% Natural</p>
+      <p style="color:#a3c4a8;margin:8px 0 0;font-size:14px;">Organikas Foods — 100% Natural</p>
     </div>
     <div style="padding:24px;border:1px solid #eee;border-top:none;border-radius:0 0 8px 8px;">
       <p style="font-size:15px;color:#333;">Hi ${order.customerName},</p>
@@ -151,7 +151,7 @@ export async function POST(request: Request) {
 
     // Send admin notification
     const adminResult = await resend.emails.send({
-      from: `Organika's Food Orders <${FROM_EMAIL}>`,
+      from: `Organikas Foods Orders <${FROM_EMAIL}>`,
       to: ADMIN_EMAIL,
       subject: `New Order #${order.orderNumber} — ₹${order.total} from ${order.customerName}`,
       html: buildAdminEmailHtml(order),
@@ -170,9 +170,9 @@ export async function POST(request: Request) {
     // Send customer confirmation
     if (order.customerEmail) {
       const customerResult = await resend.emails.send({
-        from: `Organika's Food <${FROM_EMAIL}>`,
+        from: `Organikas Foods <${FROM_EMAIL}>`,
         to: order.customerEmail,
-        subject: `Order Confirmed #${order.orderNumber} — Organika's Food`,
+        subject: `Order Confirmed #${order.orderNumber} — Organikas Foods`,
         html: buildCustomerEmailHtml(order),
       });
 

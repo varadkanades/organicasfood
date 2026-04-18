@@ -9,8 +9,8 @@ import CartSlidePanel from "@/components/cart/CartSlidePanel";
 
 export const metadata: Metadata = {
   title: {
-    default: "Organika's Food — 100% Natural Food Powders",
-    template: "%s | Organika's Food",
+    default: "Organikas Foods — 100% Natural Food Powders",
+    template: "%s | Organikas Foods",
   },
   description:
     "Premium natural food powders. 100% vegan, preservative-free, FSSAI approved. Ships Pan-India & Internationally.",

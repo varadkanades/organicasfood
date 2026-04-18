@@ -1,5 +1,5 @@
 // ============================================================
-// Organika's Food — Product Data
+// Organikas Foods — Product Data
 // Single source of truth for all product information.
 // Update products here and every page updates automatically.
 // ============================================================

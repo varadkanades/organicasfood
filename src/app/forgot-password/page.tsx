@@ -2,7 +2,7 @@ import ForgotPasswordPage from "./ForgotPasswordPage";
 
 export const metadata = {
   title: "Forgot Password",
-  description: "Reset your Organika's Food account password.",
+  description: "Reset your Organikas Foods account password.",
 };
 
 export default function Page() {
