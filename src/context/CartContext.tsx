@@ -1,7 +1,9 @@
 "use client";
 
-import { createContext, useContext, useReducer, ReactNode } from "react";
+import { createContext, useContext, useEffect, useReducer, ReactNode } from "react";
 import { CartItem } from "@/types";
+
+const STORAGE_KEY = "organika_cart_v1";
 
 // --- State ---
 interface CartState {
@@ -22,7 +24,8 @@ type CartAction =
   | { type: "CLEAR_CART" }
   | { type: "TOGGLE_CART" }
   | { type: "OPEN_CART" }
-  | { type: "CLOSE_CART" };
+  | { type: "CLOSE_CART" }
+  | { type: "HYDRATE"; payload: CartItem[] };
 
 // --- Reducer ---
 function cartReducer(state: CartState, action: CartAction): CartState {
@@ -61,6 +64,8 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       return { ...state, isOpen: true };
     case "CLOSE_CART":
       return { ...state, isOpen: false };
+    case "HYDRATE":
+      return { ...state, items: action.payload };
     default:
       return state;
   }
@@ -85,6 +90,26 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, initialState);
+
+  // Hydrate from localStorage on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as CartItem[];
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          dispatch({ type: "HYDRATE", payload: parsed });
+        }
+      }
+    } catch {}
+  }, []);
+
+  // Persist on items change
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items));
+    } catch {}
+  }, [state.items]);
 
   const totalItems = state.items.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = state.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
