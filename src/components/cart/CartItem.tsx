@@ -49,7 +49,7 @@ export default function CartItemRow({ item }: CartItemRowProps) {
           {/* Remove button */}
           <button
             onClick={() => removeItem(item.productId, item.size)}
-            className="p-1.5 rounded-lg text-mid-gray/50 hover:text-red-500 hover:bg-red-50 transition-all duration-200 opacity-0 group-hover:opacity-100"
+            className="p-1.5 rounded-lg text-mid-gray hover:text-red-500 hover:bg-red-50 transition-all duration-200"
             aria-label={`Remove ${item.name}`}
           >
             <Trash2 className="w-3.5 h-3.5" />
