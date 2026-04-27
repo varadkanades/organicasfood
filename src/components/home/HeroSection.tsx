@@ -322,7 +322,7 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 12 }}
             animate={mounted ? { opacity: 1, y: 0 } : {}}
             transition={{ delay: 0.3, duration: 0.6 }}
-            className="inline-flex items-center gap-2.5 bg-white/10 backdrop-blur-sm border border-white/15 rounded-full px-4 py-2 mb-8"
+            className="inline-flex items-center gap-2.5 bg-white/10 backdrop-blur-sm border border-white/15 rounded-full px-4 py-2 mb-8 mt-24 sm:mt-0"
           >
             <span className="w-1.5 h-1.5 rounded-full bg-fresh-green animate-pulse" />
             <span className="text-xs font-medium text-white/80 tracking-[0.15em] uppercase">

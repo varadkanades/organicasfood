@@ -1259,6 +1259,7 @@ export default function AdminDashboard() {
               {/* ── Save / Cancel ──────────────────────────────────────── */}
               <div className="flex items-center gap-3 pt-2 pb-8">
                 <button
+                  type="button"
                   onClick={handleSave}
                   disabled={isSaving}
                   className="flex items-center gap-2 h-11 px-6 rounded-lg bg-fresh-green text-white text-sm font-medium hover:bg-deep-forest transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
@@ -1271,6 +1272,7 @@ export default function AdminDashboard() {
                   {editingProductId ? "Save Changes" : "Create Product"}
                 </button>
                 <button
+                  type="button"
                   onClick={cancelForm}
                   className="h-11 px-6 rounded-lg text-sm font-medium text-mid-gray hover:bg-soft-stone/60 hover:text-rich-black transition-colors"
                 >

@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   useCallback,
   type ReactNode,
@@ -29,6 +30,10 @@ const AuthContext = createContext<AuthContextType>({
   signOut: async () => {},
 });
 
+// Sentinel returned by fetchRole when the request errored (network / RLS blip).
+// Distinct from `null`, which means "row exists but role is null / no row".
+type RoleResult = "admin" | "customer" | null | "__error__";
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [state, setState] = useState<AuthState>({
@@ -37,9 +42,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading: true,
   });
 
-  // Fetch user role from profiles table
+  // Set during signOut so visibilitychange / onAuthStateChange races don't
+  // restore the session before the sign-out completes.
+  const signingOutRef = useRef(false);
+  // Latest known role — used to preserve admin status across transient
+  // profiles fetch failures (network blip, RLS hiccup) instead of nulling it.
+  const lastRoleRef = useRef<"admin" | "customer" | null>(null);
+
   const fetchRole = useCallback(
-    async (userId: string): Promise<"admin" | "customer" | null> => {
+    async (userId: string): Promise<RoleResult> => {
       try {
         const { data, error } = await supabase
           .from("profiles")
@@ -47,17 +58,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .eq("id", userId)
           .single();
 
-        if (error || !data) return null;
+        if (error) return "__error__";
+        if (!data) return null;
         return data.role as "admin" | "customer";
       } catch {
-        return null;
+        return "__error__";
       }
     },
     []
   );
 
+  // Apply a fetched role, preserving the previous role on transient errors.
+  const applyRole = useCallback(
+    (user: User, fetched: RoleResult) => {
+      const role =
+        fetched === "__error__" ? lastRoleRef.current : fetched;
+      lastRoleRef.current = role;
+      setState({ user, role, isLoading: false });
+    },
+    []
+  );
+
   useEffect(() => {
-    // 1. Check existing session on mount
     const initSession = async () => {
       try {
         const {
@@ -66,8 +88,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (session?.user) {
           const role = await fetchRole(session.user.id);
-          setState({ user: session.user, role, isLoading: false });
+          applyRole(session.user, role);
         } else {
+          lastRoleRef.current = null;
           setState({ user: null, role: null, isLoading: false });
         }
       } catch {
@@ -77,30 +100,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     initSession();
 
-    // 2. Listen for auth changes (login, logout, token refresh)
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_OUT") {
+        lastRoleRef.current = null;
         setState({ user: null, role: null, isLoading: false });
       } else if (session?.user) {
+        if (signingOutRef.current) return;
         const role = await fetchRole(session.user.id);
-        setState({ user: session.user, role, isLoading: false });
+        applyRole(session.user, role);
       }
     });
 
-    // 3. Re-validate session whenever the tab becomes visible again.
-    // Fixes stale-cache cases (esp. on /admin) where the role appears wrong
-    // after a long idle period, forcing the user to clear cache + re-login.
     const onVisible = async () => {
       if (document.visibilityState !== "visible") return;
+      if (signingOutRef.current) return;
       const {
         data: { session },
       } = await supabase.auth.getSession();
       if (session?.user) {
         const role = await fetchRole(session.user.id);
-        setState({ user: session.user, role, isLoading: false });
+        applyRole(session.user, role);
       } else {
+        lastRoleRef.current = null;
         setState({ user: null, role: null, isLoading: false });
       }
     };
@@ -110,12 +133,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       subscription.unsubscribe();
       document.removeEventListener("visibilitychange", onVisible);
     };
-  }, [fetchRole]);
+  }, [fetchRole, applyRole]);
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
-    setState({ user: null, role: null, isLoading: false });
-    router.push("/");
+    signingOutRef.current = true;
+    try {
+      await supabase.auth.signOut();
+    } finally {
+      lastRoleRef.current = null;
+      setState({ user: null, role: null, isLoading: false });
+      router.push("/");
+      // Release the guard after navigation so subsequent sign-ins are not blocked.
+      setTimeout(() => {
+        signingOutRef.current = false;
+      }, 1500);
+    }
   }, [router]);
 
   return (

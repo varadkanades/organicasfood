@@ -161,6 +161,7 @@ export default function CheckoutPage() {
     state: "",
   });
   const [notes, setNotes] = useState("");
+  const [agreeTerms, setAgreeTerms] = useState(false);
 
   // Field errors
   const [fieldErrors, setFieldErrors] = useState<
@@ -255,6 +256,10 @@ export default function CheckoutPage() {
     if (!validate()) return;
     if (items.length === 0) {
       setError("Your cart is empty.");
+      return;
+    }
+    if (!agreeTerms) {
+      setError("Please accept the Terms & Conditions and Privacy Policy to continue.");
       return;
     }
 
@@ -852,12 +857,33 @@ export default function CheckoutPage() {
                 </div>
               )}
 
+              {/* T&C agreement */}
+              <label className="flex items-start gap-2.5 mb-3 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={agreeTerms}
+                  onChange={(e) => setAgreeTerms(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-soft-stone text-fresh-green focus:ring-2 focus:ring-fresh-green/40 cursor-pointer"
+                />
+                <span className="text-xs text-mid-gray leading-snug">
+                  I agree to the{" "}
+                  <Link href="/pages/terms" className="underline text-deep-forest hover:text-fresh-green">
+                    Terms &amp; Conditions
+                  </Link>{" "}
+                  and{" "}
+                  <Link href="/pages/privacy" className="underline text-deep-forest hover:text-fresh-green">
+                    Privacy Policy
+                  </Link>
+                  .
+                </span>
+              </label>
+
               {/* Place order button */}
               <Button
                 size="lg"
                 fullWidth
                 onClick={handlePlaceOrder}
-                disabled={isPlacingOrder}
+                disabled={isPlacingOrder || (!!user && !agreeTerms)}
                 className="mb-3"
               >
                 {isPlacingOrder ? (
@@ -872,12 +898,6 @@ export default function CheckoutPage() {
                 )}
               </Button>
 
-              <p className="text-[11px] text-mid-gray/60 text-center">
-                By placing this order, you agree to our{" "}
-                <Link href="/pages/terms" className="underline hover:text-mid-gray">
-                  terms and conditions
-                </Link>.
-              </p>
             </div>
           </div>
         </div>
