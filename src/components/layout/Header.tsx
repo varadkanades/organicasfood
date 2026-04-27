@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import Container from "@/components/ui/Container";
 import MobileNav from "@/components/layout/MobileNav";
+import SearchModal from "@/components/layout/SearchModal";
 import { NAV_LINKS, SITE_NAME } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/context/CartContext";
@@ -32,6 +33,7 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   const { toggleCart, totalItems } = useCart();
   const { user, role, isLoading, signOut } = useAuth();
@@ -183,6 +185,8 @@ export default function Header() {
             <div className="flex items-center gap-1">
               {/* Search button */}
               <button
+                type="button"
+                onClick={() => setIsSearchOpen(true)}
                 className={cn(
                   "relative flex h-10 w-10 items-center justify-center rounded-lg transition-colors duration-200",
                   isTransparent
@@ -394,6 +398,11 @@ export default function Header() {
       </header>
 
       {/* Mobile Navigation Overlay */}
+      <SearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+      />
+
       <MobileNav
         isOpen={isMobileNavOpen}
         onClose={() => setIsMobileNavOpen(false)}
